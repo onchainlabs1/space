@@ -1564,44 +1564,77 @@
         if (exploreCardSelected >= 0 && exploreCardSelected < cards.length) {
             const card = cards[exploreCardSelected];
             
-            // Dark overlay
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            // Dark overlay with subtle gradient
+            const overlayGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+            overlayGrad.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
+            overlayGrad.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+            ctx.fillStyle = overlayGrad;
             ctx.fillRect(0, 0, W, H);
             
             // Large modal
-            const modalW = 700;
-            const modalH = 450;
+            const modalW = 720;
+            const modalH = 480;
             const modalX = (W - modalW) / 2;
             const modalY = (H - modalH) / 2;
             
-            // Modal background
-            ctx.fillStyle = 'rgba(15, 20, 30, 0.98)';
+            // Modal shadow/glow
+            ctx.shadowColor = card.color;
+            ctx.shadowBlur = 30;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Modal background with subtle gradient
+            const bgGrad = ctx.createLinearGradient(modalX, modalY, modalX, modalY + modalH);
+            bgGrad.addColorStop(0, 'rgba(20, 25, 35, 0.98)');
+            bgGrad.addColorStop(1, 'rgba(15, 18, 28, 0.98)');
+            ctx.fillStyle = bgGrad;
             ctx.beginPath();
-            ctx.roundRect(modalX, modalY, modalW, modalH, 20);
+            ctx.roundRect(modalX, modalY, modalW, modalH, 24);
             ctx.fill();
             
-            // Modal border
+            ctx.shadowBlur = 0;
+            
+            // Modal border with gradient effect
             ctx.strokeStyle = card.color;
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             ctx.stroke();
             
-            // Large icon
-            ctx.font = '80px sans-serif';
-            ctx.fillText(card.icon, W/2, modalY + 80);
+            // Inner border highlight
+            ctx.strokeStyle = card.color + '40';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(modalX + 2, modalY + 2, modalW - 4, modalH - 4, 22);
+            ctx.stroke();
             
-            // Title
-            ctx.font = 'bold 36px sans-serif';
+            // Icon with subtle glow
+            ctx.shadowColor = card.color;
+            ctx.shadowBlur = 20;
+            ctx.font = '90px sans-serif';
+            ctx.fillText(card.icon, W/2, modalY + 95);
+            ctx.shadowBlur = 0;
+            
+            // Title with better spacing
+            ctx.font = 'bold 38px sans-serif';
             ctx.fillStyle = card.color;
             ctx.textAlign = 'center';
-            ctx.fillText(card.title, W/2, modalY + 140);
+            ctx.fillText(card.title, W/2, modalY + 155);
+            
+            // Subtle divider line
+            ctx.strokeStyle = card.color + '30';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(modalX + 60, modalY + 180);
+            ctx.lineTo(modalX + modalW - 60, modalY + 180);
+            ctx.stroke();
             
             // Full text (larger, better formatted)
-            ctx.font = '22px sans-serif';
-            ctx.fillStyle = '#ddd';
+            ctx.font = '24px sans-serif';
+            ctx.fillStyle = '#e0e0e0';
             const words = card.text.split(' ');
             let line = '';
-            let y = modalY + 190;
-            const maxWidth = modalW - 80;
+            let y = modalY + 220;
+            const maxWidth = modalW - 100;
+            const lineHeight = 36;
             
             words.forEach(word => {
                 const testLine = line + word + ' ';
@@ -1609,17 +1642,17 @@
                 if (metrics.width > maxWidth && line !== '') {
                     ctx.fillText(line, W/2, y);
                     line = word + ' ';
-                    y += 32;
+                    y += lineHeight;
                 } else {
                     line = testLine;
                 }
             });
             ctx.fillText(line, W/2, y);
             
-            // Close hint
-            ctx.font = '18px sans-serif';
-            ctx.fillStyle = '#888';
-            ctx.fillText('Press SPACE or ESC to close', W/2, modalY + modalH - 30);
+            // Close hint with better styling
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = '#999';
+            ctx.fillText('Press SPACE or ESC to close', W/2, modalY + modalH - 25);
             
             ctx.textAlign = 'left';
         } else {
@@ -1631,31 +1664,60 @@
             
             // Show compact cards (icon + title only)
             cards.forEach((card, index) => {
-                // Card background
-                ctx.fillStyle = 'rgba(20, 25, 35, 0.95)';
+                const isSelected = index === menuSel;
+                
+                // Card shadow for selected
+                if (isSelected) {
+                    ctx.shadowColor = card.color;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                }
+                
+                // Card background with subtle gradient
+                const cardGrad = ctx.createLinearGradient(card.x, card.y, card.x, card.y + 140);
+                cardGrad.addColorStop(0, isSelected ? 'rgba(25, 30, 40, 0.98)' : 'rgba(20, 25, 35, 0.95)');
+                cardGrad.addColorStop(1, isSelected ? 'rgba(18, 23, 33, 0.98)' : 'rgba(15, 20, 30, 0.95)');
+                ctx.fillStyle = cardGrad;
                 ctx.beginPath();
-                ctx.roundRect(card.x, card.y, 320, 140, 12);
+                ctx.roundRect(card.x, card.y, 320, 140, 14);
                 ctx.fill();
                 
-                // Card border (highlight if hovered)
+                ctx.shadowBlur = 0;
+                
+                // Card border (highlight if selected)
                 ctx.strokeStyle = card.color;
-                ctx.lineWidth = index === menuSel ? 4 : 3;
+                ctx.lineWidth = isSelected ? 4 : 3;
                 ctx.stroke();
                 
-                // Icon
-                ctx.font = '56px sans-serif';
-                ctx.fillText(card.icon, card.x + 160, card.y + 60);
+                // Inner border highlight for selected
+                if (isSelected) {
+                    ctx.strokeStyle = card.color + '40';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(card.x + 2, card.y + 2, 316, 136, 12);
+                    ctx.stroke();
+                }
+                
+                // Icon with subtle glow when selected
+                if (isSelected) {
+                    ctx.shadowColor = card.color;
+                    ctx.shadowBlur = 10;
+                }
+                ctx.font = '60px sans-serif';
+                ctx.fillText(card.icon, card.x + 160, card.y + 65);
+                ctx.shadowBlur = 0;
                 
                 // Title
-                ctx.font = 'bold 24px sans-serif';
+                ctx.font = 'bold 26px sans-serif';
                 ctx.fillStyle = card.color;
                 ctx.textAlign = 'center';
-                ctx.fillText(card.title, card.x + 160, card.y + 110);
+                ctx.fillText(card.title, card.x + 160, card.y + 115);
                 
                 // Click hint
-                ctx.font = '14px sans-serif';
-                ctx.fillStyle = '#666';
-                ctx.fillText('Click to learn more', card.x + 160, card.y + 130);
+                ctx.font = '13px sans-serif';
+                ctx.fillStyle = isSelected ? '#888' : '#666';
+                ctx.fillText('Click to learn more', card.x + 160, card.y + 135);
             });
             
             // Back button
