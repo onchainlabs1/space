@@ -584,13 +584,141 @@
         document.getElementById('touchControls').classList.toggle('active', isMobile && state === 'playing');
     }
     
-    // Click to start on menu
-    canvas.addEventListener('click', () => { 
+    // Click to start on menu and level select
+    canvas.addEventListener('click', (e) => { 
         audio.init();
-        if (state === 'menu' && menuSel === 0) {
-            startTransition('playing', () => startLevel(0));
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        if (state === 'menu') {
+            // Calculate which menu item was clicked
+            const menuStartY = 220;
+            const menuSpacing = 65;
+            
+            for (let i = 0; i < 5; i++) {
+                const itemY = menuStartY + i * menuSpacing;
+                if (clickY >= itemY - 25 && clickY <= itemY + 25) {
+                    menuSel = i;
+                    audio.playClick();
+                    if (menuSel === 0) startTransition('playing', () => startLevel(0));
+                    else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
+                    else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
+                    else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
+                    else state = 'info';
+                    break;
+                }
+            }
+        } else if (state === 'levelSelect') {
+            // Detect click on level cards (3x3 grid)
+            for (let i = 0; i < 9; i++) {
+                const col = i % 3;
+                const row = Math.floor(i / 3);
+                const x = 200 + col * 200;
+                const y = 150 + row * 110;
+                
+                if (clickX >= x - 70 && clickX <= x + 70 && 
+                    clickY >= y - 35 && clickY <= y + 45) {
+                    levelSel = i;
+                    audio.playClick();
+                    if (levelSel < 9) startTransition('playing', () => startLevel(levelSel));
+                    break;
+                }
+            }
+            // Check back button
+            if (clickY >= H - 60 && clickY <= H - 20) {
+                state = 'menu';
+                audio.playClick();
+            }
+        } else if (state === 'explore' && exploreCardSelected === -1) {
+            // Detect click on explore cards (2x2 grid)
+            const cards = [
+                { x: 120, y: 120 },
+                { x: 520, y: 120 },
+                { x: 120, y: 300 },
+                { x: 520, y: 300 }
+            ];
+            
+            for (let i = 0; i < 4; i++) {
+                const card = cards[i];
+                if (clickX >= card.x && clickX <= card.x + 320 &&
+                    clickY >= card.y && clickY <= card.y + 140) {
+                    menuSel = i;
+                    exploreCardSelected = i;
+                    audio.playClick();
+                    break;
+                }
+            }
         }
     });
+    
+    // Touch navigation for menus (swipe up/down, tap to select)
+    let touchStartY = 0;
+    let touchStartX = 0;
+    
+    canvas.addEventListener('touchstart', (e) => {
+        if (state === 'menu' || state === 'levelSelect' || state === 'explore') {
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+    
+    canvas.addEventListener('touchend', (e) => {
+        if (state === 'menu' || state === 'levelSelect' || state === 'explore') {
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchEndX = e.changedTouches[0].clientX;
+            const diffY = touchStartY - touchEndY;
+            const diffX = Math.abs(touchStartX - touchEndX);
+            
+            // Only process if vertical swipe (not horizontal)
+            if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 20) {
+                // Swipe up = previous item
+                if (diffY < -20) {
+                    if (state === 'menu') {
+                        menuSel = (menuSel + 4) % 5;
+                        audio.playClick();
+                    } else if (state === 'levelSelect') {
+                        levelSel = Math.max(0, levelSel - 3);
+                        audio.playClick();
+                    } else if (state === 'explore' && exploreCardSelected === -1) {
+                        menuSel = menuSel >= 2 ? menuSel - 2 : menuSel + 2;
+                        audio.playClick();
+                    }
+                }
+                // Swipe down = next item
+                else if (diffY > 20) {
+                    if (state === 'menu') {
+                        menuSel = (menuSel + 1) % 5;
+                        audio.playClick();
+                    } else if (state === 'levelSelect') {
+                        levelSel = Math.min(9, levelSel + 3);
+                        audio.playClick();
+                    } else if (state === 'explore' && exploreCardSelected === -1) {
+                        menuSel = menuSel < 2 ? menuSel + 2 : menuSel - 2;
+                        audio.playClick();
+                    }
+                }
+            }
+            // Tap (small movement) = select
+            else if (Math.abs(diffY) < 15 && Math.abs(diffX) < 15) {
+                if (state === 'menu') {
+                    audio.playClick();
+                    if (menuSel === 0) startTransition('playing', () => startLevel(0));
+                    else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
+                    else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
+                    else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
+                    else state = 'info';
+                } else if (state === 'levelSelect') {
+                    audio.playClick();
+                    if (levelSel < 9) startTransition('playing', () => startLevel(levelSel));
+                    else state = 'menu';
+                } else if (state === 'explore' && exploreCardSelected === -1) {
+                    audio.playClick();
+                    exploreCardSelected = menuSel;
+                }
+            }
+        }
+    }, { passive: true });
     
     // ============================================
     // LEVEL MANAGEMENT
@@ -1419,6 +1547,14 @@
             ctx.fillText(item, W/2, y + 8);
         });
         
+        // Mobile navigation hints
+        if (isMobile) {
+            ctx.font = '14px sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('Swipe ↑↓ to navigate | Tap to select', W/2, H - 60);
+        }
+        
         ctx.textAlign = 'left';
     }
     
@@ -1478,6 +1614,14 @@
         ctx.font = '24px sans-serif';
         ctx.fillStyle = levelSel === 9 ? '#4CAF50' : '#888';
         ctx.fillText(t('back'), W/2, H - 40);
+        
+        // Mobile navigation hint
+        if (isMobile) {
+            ctx.font = '14px sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('Swipe to navigate | Tap level to play', W/2, H - 60);
+        }
         
         ctx.textAlign = 'left';
     }
