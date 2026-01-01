@@ -421,6 +421,7 @@
     let menuSel = 0;
     let levelSel = 0;
     let currentLevel = 0;
+    let exploreCardSelected = -1; // -1 = none, 0-3 = card index
     let score = 0;
     let totalScore = 0;
     let failReason = '';
@@ -1523,13 +1524,7 @@
     function drawExplore() {
         drawBackground('moon');
         
-        // Title
-        ctx.font = 'bold 42px sans-serif';
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText('🔍 ' + t('explore'), W/2, 60);
-        
-        // Cards grid 2x2
+        // Cards data
         const cards = [
             {
                 icon: '🌍',
@@ -1565,53 +1560,111 @@
             }
         ];
         
-        cards.forEach(card => {
-            // Card background
-            ctx.fillStyle = 'rgba(20, 25, 35, 0.95)';
+        // If a card is selected, show expanded modal
+        if (exploreCardSelected >= 0 && exploreCardSelected < cards.length) {
+            const card = cards[exploreCardSelected];
+            
+            // Dark overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, W, H);
+            
+            // Large modal
+            const modalW = 700;
+            const modalH = 450;
+            const modalX = (W - modalW) / 2;
+            const modalY = (H - modalH) / 2;
+            
+            // Modal background
+            ctx.fillStyle = 'rgba(15, 20, 30, 0.98)';
             ctx.beginPath();
-            ctx.roundRect(card.x, card.y, 320, 160, 12);
+            ctx.roundRect(modalX, modalY, modalW, modalH, 20);
             ctx.fill();
             
-            // Card border
+            // Modal border
             ctx.strokeStyle = card.color;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.stroke();
             
-            // Icon
-            ctx.font = '48px sans-serif';
-            ctx.fillText(card.icon, card.x + 160, card.y + 45);
+            // Large icon
+            ctx.font = '80px sans-serif';
+            ctx.fillText(card.icon, W/2, modalY + 80);
             
             // Title
-            ctx.font = 'bold 22px sans-serif';
+            ctx.font = 'bold 36px sans-serif';
             ctx.fillStyle = card.color;
-            ctx.fillText(card.title, card.x + 160, card.y + 80);
+            ctx.textAlign = 'center';
+            ctx.fillText(card.title, W/2, modalY + 140);
             
-            // Text (wrapped)
-            ctx.font = '16px sans-serif';
+            // Full text (larger, better formatted)
+            ctx.font = '22px sans-serif';
             ctx.fillStyle = '#ddd';
             const words = card.text.split(' ');
             let line = '';
-            let y = card.y + 110;
+            let y = modalY + 190;
+            const maxWidth = modalW - 80;
+            
             words.forEach(word => {
                 const testLine = line + word + ' ';
-                ctx.font = '16px sans-serif';
                 const metrics = ctx.measureText(testLine);
-                if (metrics.width > 280 && line !== '') {
-                    ctx.fillText(line, card.x + 160, y);
+                if (metrics.width > maxWidth && line !== '') {
+                    ctx.fillText(line, W/2, y);
                     line = word + ' ';
-                    y += 22;
+                    y += 32;
                 } else {
                     line = testLine;
                 }
             });
-            ctx.fillText(line, card.x + 160, y);
-        });
-        
-        // Back button
-        ctx.font = '24px sans-serif';
-        ctx.fillStyle = '#888';
-        ctx.fillText(t('back'), W/2, H - 30);
-        ctx.textAlign = 'left';
+            ctx.fillText(line, W/2, y);
+            
+            // Close hint
+            ctx.font = '18px sans-serif';
+            ctx.fillStyle = '#888';
+            ctx.fillText('Press SPACE or ESC to close', W/2, modalY + modalH - 30);
+            
+            ctx.textAlign = 'left';
+        } else {
+            // Show title
+            ctx.font = 'bold 42px sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔍 ' + t('explore'), W/2, 60);
+            
+            // Show compact cards (icon + title only)
+            cards.forEach((card, index) => {
+                // Card background
+                ctx.fillStyle = 'rgba(20, 25, 35, 0.95)';
+                ctx.beginPath();
+                ctx.roundRect(card.x, card.y, 320, 140, 12);
+                ctx.fill();
+                
+                // Card border (highlight if hovered)
+                ctx.strokeStyle = card.color;
+                ctx.lineWidth = index === menuSel ? 4 : 3;
+                ctx.stroke();
+                
+                // Icon
+                ctx.font = '56px sans-serif';
+                ctx.fillText(card.icon, card.x + 160, card.y + 60);
+                
+                // Title
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillStyle = card.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(card.title, card.x + 160, card.y + 110);
+                
+                // Click hint
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = '#666';
+                ctx.fillText('Click to learn more', card.x + 160, card.y + 130);
+            });
+            
+            // Back button
+            ctx.font = '24px sans-serif';
+            ctx.fillStyle = '#888';
+            ctx.textAlign = 'center';
+            ctx.fillText(t('back'), W/2, H - 30);
+            ctx.textAlign = 'left';
+        }
     }
     
     function drawInfo() {
@@ -1761,7 +1814,7 @@
                 if (menuSel === 0) startTransition('playing', () => startLevel(0));
                 else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
                 else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
-                else if (menuSel === 3) { state = 'explore'; }
+                else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
                 else state = 'info';
             }
             drawMenu();
@@ -1780,8 +1833,42 @@
             drawLevelSelect();
         }
         else if (state === 'explore') {
+            // Navigation when no card is selected
+            if (exploreCardSelected === -1) {
+                if (justPressed['ArrowRight'] || justPressed['KeyD']) { 
+                    menuSel = (menuSel + 1) % 4; 
+                    audio.playClick(); 
+                }
+                if (justPressed['ArrowLeft'] || justPressed['KeyA']) { 
+                    menuSel = (menuSel + 3) % 4; 
+                    audio.playClick(); 
+                }
+                if (justPressed['ArrowDown'] || justPressed['KeyS']) { 
+                    menuSel = menuSel < 2 ? menuSel + 2 : menuSel - 2; 
+                    audio.playClick(); 
+                }
+                if (justPressed['ArrowUp'] || justPressed['KeyW']) { 
+                    menuSel = menuSel >= 2 ? menuSel - 2 : menuSel + 2; 
+                    audio.playClick(); 
+                }
+                if (justPressed['Space'] || justPressed['Enter']) {
+                    exploreCardSelected = menuSel;
+                    audio.playClick();
+                }
+                if (justPressed['Escape']) { 
+                    state = 'menu'; 
+                    exploreCardSelected = -1;
+                    menuSel = 0;
+                    audio.playClick(); 
+                }
+            } else {
+                // Card is expanded - close on SPACE/ESC
+                if (justPressed['Space'] || justPressed['Escape'] || justPressed['Enter']) {
+                    exploreCardSelected = -1;
+                    audio.playClick();
+                }
+            }
             drawExplore();
-            if (justPressed['Space'] || justPressed['Escape']) { state = 'menu'; audio.playClick(); }
         }
         else if (state === 'info') {
             drawInfo();
