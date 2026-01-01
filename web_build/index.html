@@ -1345,37 +1345,42 @@
     function drawMenu() {
         drawBackground('moon');
         
-        // Info panel - top right corner
+        // Info panel - top right corner, more compact
         const bestMoon = highScores.moon[0] || 0;
         const bestMars = highScores.mars[0] || 0;
         const bestEarth = highScores.earth[0] || 0;
         
-        ctx.fillStyle = 'rgba(15, 20, 30, 0.7)';
+        const panelX = W - 170;
+        const panelY = 20;
+        const panelW = 150;
+        const panelH = 85;
+        
+        ctx.fillStyle = 'rgba(15, 20, 30, 0.75)';
         ctx.beginPath();
-        ctx.roundRect(W - 200, 15, 185, 100, 8);
+        ctx.roundRect(panelX, panelY, panelW, panelH, 8);
         ctx.fill();
         
         ctx.strokeStyle = '#4CAF50';
         ctx.lineWidth = 1;
         ctx.stroke();
         
-        ctx.font = 'bold 14px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         ctx.fillStyle = '#4CAF50';
         ctx.textAlign = 'left';
-        ctx.fillText(t('highscore'), W - 195, 35);
+        ctx.fillText(t('highscore'), panelX + 8, panelY + 20);
         
-        ctx.font = '13px sans-serif';
-        ctx.fillStyle = '#aaa';
-        ctx.fillText(`🌙 ${bestMoon}`, W - 195, 55);
-        ctx.fillText(`🔴 ${bestMars}`, W - 195, 72);
-        ctx.fillText(`🌍 ${bestEarth}`, W - 195, 89);
-        
-        // Controls - top right, below scores
         ctx.font = '12px sans-serif';
-        ctx.fillStyle = '#666';
+        ctx.fillStyle = '#bbb';
+        ctx.fillText(`🌙 ${bestMoon}`, panelX + 8, panelY + 38);
+        ctx.fillText(`🔴 ${bestMars}`, panelX + 8, panelY + 53);
+        ctx.fillText(`🌍 ${bestEarth}`, panelX + 8, panelY + 68);
+        
+        // Controls - inline with scores, more compact
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#777';
         const audioIcon = audio.muted ? '🔇' : '🔊';
         const langText = lang === 'en' ? 'Magyar' : 'English';
-        ctx.fillText(`M=${audioIcon} L=${langText}`, W - 195, 108);
+        ctx.fillText(`M=${audioIcon} L=${langText}`, panelX + 8, panelY + 82);
         
         // Title with glow
         ctx.shadowColor = '#4CAF50';
