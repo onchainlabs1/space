@@ -1345,48 +1345,103 @@
     function drawMenu() {
         drawBackground('moon');
         
-        // Title with glow
+        // Title with enhanced glow
         ctx.shadowColor = '#4CAF50';
-        ctx.shadowBlur = 20;
-        ctx.font = 'bold 56px sans-serif';
+        ctx.shadowBlur = 25;
+        ctx.font = 'bold 58px sans-serif';
         ctx.fillStyle = '#4CAF50';
         ctx.textAlign = 'center';
-        ctx.fillText('🚀 ' + t('title'), W/2, 100);
+        ctx.fillText('🚀 ' + t('title'), W/2, 105);
         ctx.shadowBlur = 0;
         
-        ctx.font = '28px sans-serif';
-        ctx.fillStyle = '#888';
-        ctx.fillText(t('subtitle'), W/2, 145);
+        // Subtitle with subtle glow
+        ctx.shadowColor = '#888';
+        ctx.shadowBlur = 8;
+        ctx.font = '26px sans-serif';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(t('subtitle'), W/2, 150);
+        ctx.shadowBlur = 0;
         
+        // Menu items with better spacing and effects
         const items = [t('play'), t('levels'), t('tutorial'), t('explore'), t('info')];
         items.forEach((item, i) => {
-            const y = 220 + i * 60;
+            const y = 225 + i * 62;
+            const isSelected = i === menuSel;
             
-            if (i === menuSel) {
-                ctx.fillStyle = 'rgba(76, 175, 80, 0.15)';
+            if (isSelected) {
+                // Selected item background with gradient
+                const bgGrad = ctx.createLinearGradient(W/2 - 130, y - 28, W/2 + 130, y + 22);
+                bgGrad.addColorStop(0, 'rgba(76, 175, 80, 0.2)');
+                bgGrad.addColorStop(0.5, 'rgba(76, 175, 80, 0.25)');
+                bgGrad.addColorStop(1, 'rgba(76, 175, 80, 0.2)');
+                ctx.fillStyle = bgGrad;
                 ctx.beginPath();
-                ctx.roundRect(W/2 - 120, y - 25, 240, 50, 8);
+                ctx.roundRect(W/2 - 130, y - 28, 260, 56, 10);
                 ctx.fill();
+                
+                // Glow effect
+                ctx.shadowColor = '#4CAF50';
+                ctx.shadowBlur = 15;
                 ctx.strokeStyle = '#4CAF50';
                 ctx.lineWidth = 3;
                 ctx.stroke();
+                ctx.shadowBlur = 0;
+                
+                // Inner highlight
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.roundRect(W/2 - 128, y - 26, 256, 52, 8);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
             }
             
-            ctx.font = 'bold 28px sans-serif';
-            ctx.fillStyle = i === menuSel ? '#4CAF50' : '#fff';
-            ctx.fillText(item, W/2, y + 8);
+            // Text with better contrast
+            ctx.font = isSelected ? 'bold 30px sans-serif' : 'bold 26px sans-serif';
+            ctx.fillStyle = isSelected ? '#4CAF50' : '#ddd';
+            if (isSelected) {
+                ctx.shadowColor = '#4CAF50';
+                ctx.shadowBlur = 8;
+            }
+            ctx.fillText(item, W/2, y + 10);
+            ctx.shadowBlur = 0;
         });
         
-        // High score display
+        // High score display with better styling
         const bestMoon = highScores.moon[0] || 0;
         const bestMars = highScores.mars[0] || 0;
         const bestEarth = highScores.earth[0] || 0;
-        ctx.font = '14px sans-serif';
-        ctx.fillStyle = '#555';
-        ctx.fillText(`${t('highscore')}: 🌙${bestMoon} | 🔴${bestMars} | 🌍${bestEarth}`, W/2, H - 50);
         
-        ctx.fillStyle = '#444';
-        ctx.fillText(`M = ${audio.muted ? '🔇' : '🔊'} | L = ${lang === 'en' ? 'Magyar' : 'English'}`, W/2, H - 25);
+        // Score background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.roundRect(W/2 - 180, H - 75, 360, 35, 8);
+        ctx.fill();
+        
+        ctx.font = '15px sans-serif';
+        ctx.fillStyle = '#888';
+        ctx.fillText(`${t('highscore')}:`, W/2 - 150, H - 55);
+        
+        // Scores with icons
+        ctx.fillStyle = '#ffeb3b';
+        ctx.fillText(`🌙 ${bestMoon}`, W/2 - 60, H - 55);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillText(`🔴 ${bestMars}`, W/2 + 20, H - 55);
+        ctx.fillStyle = '#4a9eff';
+        ctx.fillText(`🌍 ${bestEarth}`, W/2 + 100, H - 55);
+        
+        // Controls hint with better styling
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(W/2 - 140, H - 35, 280, 22, 6);
+        ctx.fill();
+        
+        ctx.font = '13px sans-serif';
+        ctx.fillStyle = '#666';
+        const audioIcon = audio.muted ? '🔇' : '🔊';
+        const langText = lang === 'en' ? 'Magyar' : 'English';
+        ctx.fillText(`M = ${audioIcon} | L = ${langText}`, W/2, H - 20);
         ctx.textAlign = 'left';
     }
     
