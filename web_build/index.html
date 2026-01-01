@@ -133,6 +133,23 @@
     const ctx = canvas.getContext('2d');
     const W = 960, H = 540;
     
+    // Polyfill for roundRect (if not supported)
+    if (!ctx.roundRect) {
+        ctx.roundRect = function(x, y, width, height, radius) {
+            this.beginPath();
+            this.moveTo(x + radius, y);
+            this.lineTo(x + width - radius, y);
+            this.quadraticCurveTo(x + width, y, x + width, y + radius);
+            this.lineTo(x + width, y + height - radius);
+            this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            this.lineTo(x + radius, y + height);
+            this.quadraticCurveTo(x, y + height, x, y + height - radius);
+            this.lineTo(x, y + radius);
+            this.quadraticCurveTo(x, y, x + radius, y);
+            this.closePath();
+        };
+    }
+    
     // ============================================
     // AUDIO SYSTEM (Web Audio API)
     // ============================================
@@ -465,7 +482,7 @@
     const TEXTS = {
         en: {
             title: 'SPACE MISSION', subtitle: 'Land Safely!',
-            play: 'Play', levels: 'Levels', tutorial: 'Tutorial', info: 'Info', back: 'Back',
+            play: 'Play', levels: 'Levels', tutorial: 'Tutorial', explore: 'Explore', info: 'Info', back: 'Back',
             moon: 'Moon', mars: 'Mars', earth: 'Earth',
             altitude: 'Alt', speed: 'Spd', fuel: 'Fuel',
             success: 'Perfect Landing!', score: 'Score', total: 'Total', again: 'SPACE = Continue',
@@ -477,11 +494,19 @@
             tut3: 'Land slowly on the green pad!',
             mascot_fast: 'Slow down!', mascot_fuel: 'Save fuel!', mascot_aim: 'Aim for the pad!',
             mascot_good: 'Great job!', mascot_try: 'You can do it!',
-            nextLevel: 'Next Level', menu: 'Menu'
+            nextLevel: 'Next Level', menu: 'Menu',
+            explore_gravity_title: 'What is Gravity?',
+            explore_gravity_text: 'Gravity pulls everything down! On Earth, you don\'t float because gravity pulls you. In the game, your ship always falls because of gravity!',
+            explore_moon_title: 'Moon',
+            explore_moon_text: 'Moon has low gravity (1/6 of Earth). You would weigh much less! That\'s why landing is easier in the game.',
+            explore_mars_title: 'Mars',
+            explore_mars_text: 'Mars has medium gravity (1/3 of Earth). You need more care to land in the game!',
+            explore_earth_title: 'Earth',
+            explore_earth_text: 'Earth has strong gravity (strongest of the three). This is the hardest level in the game!'
         },
         hu: {
             title: 'ŰRMISSZIÓ', subtitle: 'Szállj le biztonságosan!',
-            play: 'Játék', levels: 'Pályák', tutorial: 'Bemutató', info: 'Infó', back: 'Vissza',
+            play: 'Játék', levels: 'Pályák', tutorial: 'Bemutató', explore: 'Felfedezés', info: 'Infó', back: 'Vissza',
             moon: 'Hold', mars: 'Mars', earth: 'Föld',
             altitude: 'Mag', speed: 'Seb', fuel: 'Üzemanyag',
             success: 'Sikeres Landolás!', score: 'Pont', total: 'Össz', again: 'SPACE = Tovább',
@@ -493,7 +518,15 @@
             tut3: 'Lassan szállj le a zöld platformra!',
             mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a padot!',
             mascot_good: 'Szuper!', mascot_try: 'Menni fog!',
-            nextLevel: 'Következő', menu: 'Menü'
+            nextLevel: 'Következő', menu: 'Menü',
+            explore_gravity_title: 'Mi a gravitáció?',
+            explore_gravity_text: 'A gravitáció mindent lefelé húz! A Földön nem lebegsz, mert a gravitáció húz. A játékban a hajó mindig leesik a gravitáció miatt!',
+            explore_moon_title: 'Hold',
+            explore_moon_text: 'A Holdnak alacsony a gravitációja (a Föld 1/6-a). Sokkal kevesebbet mernél! Ezért könnyebb leszállni a játékban.',
+            explore_mars_title: 'Mars',
+            explore_mars_text: 'A Marsnak közepes a gravitációja (a Föld 1/3-a). Több figyelmet kell fordítanod a leszállásra a játékban!',
+            explore_earth_title: 'Föld',
+            explore_earth_text: 'A Földnek erős a gravitációja (a három közül a legerősebb). Ez a legnehezebb pálya a játékban!'
         }
     };
     const t = (key) => TEXTS[lang][key] || key;
@@ -1324,9 +1357,9 @@
         ctx.fillStyle = '#888';
         ctx.fillText(t('subtitle'), W/2, 145);
         
-        const items = [t('play'), t('levels'), t('tutorial'), t('info')];
+        const items = [t('play'), t('levels'), t('tutorial'), t('explore'), t('info')];
         items.forEach((item, i) => {
-            const y = 230 + i * 65;
+            const y = 220 + i * 60;
             
             if (i === menuSel) {
                 ctx.fillStyle = 'rgba(76, 175, 80, 0.15)';
@@ -1487,6 +1520,100 @@
         ctx.textAlign = 'left';
     }
     
+    function drawExplore() {
+        drawBackground('moon');
+        
+        // Title
+        ctx.font = 'bold 42px sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔍 ' + t('explore'), W/2, 60);
+        
+        // Cards grid 2x2
+        const cards = [
+            {
+                icon: '🌍',
+                title: t('explore_gravity_title'),
+                text: t('explore_gravity_text'),
+                color: '#4CAF50',
+                x: 120,
+                y: 120
+            },
+            {
+                icon: '🌙',
+                title: t('explore_moon_title'),
+                text: t('explore_moon_text'),
+                color: '#b4b4be',
+                x: 520,
+                y: 120
+            },
+            {
+                icon: '🔴',
+                title: t('explore_mars_title'),
+                text: t('explore_mars_text'),
+                color: '#c86432',
+                x: 120,
+                y: 300
+            },
+            {
+                icon: '🌍',
+                title: t('explore_earth_title'),
+                text: t('explore_earth_text'),
+                color: '#3c8cc8',
+                x: 520,
+                y: 300
+            }
+        ];
+        
+        cards.forEach(card => {
+            // Card background
+            ctx.fillStyle = 'rgba(20, 25, 35, 0.95)';
+            ctx.beginPath();
+            ctx.roundRect(card.x, card.y, 320, 160, 12);
+            ctx.fill();
+            
+            // Card border
+            ctx.strokeStyle = card.color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Icon
+            ctx.font = '48px sans-serif';
+            ctx.fillText(card.icon, card.x + 160, card.y + 45);
+            
+            // Title
+            ctx.font = 'bold 22px sans-serif';
+            ctx.fillStyle = card.color;
+            ctx.fillText(card.title, card.x + 160, card.y + 80);
+            
+            // Text (wrapped)
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = '#ddd';
+            const words = card.text.split(' ');
+            let line = '';
+            let y = card.y + 110;
+            words.forEach(word => {
+                const testLine = line + word + ' ';
+                ctx.font = '16px sans-serif';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > 280 && line !== '') {
+                    ctx.fillText(line, card.x + 160, y);
+                    line = word + ' ';
+                    y += 22;
+                } else {
+                    line = testLine;
+                }
+            });
+            ctx.fillText(line, card.x + 160, y);
+        });
+        
+        // Back button
+        ctx.font = '24px sans-serif';
+        ctx.fillStyle = '#888';
+        ctx.fillText(t('back'), W/2, H - 30);
+        ctx.textAlign = 'left';
+    }
+    
     function drawInfo() {
         drawBackground('earth');
         
@@ -1627,13 +1754,14 @@
         
         // State machine
         if (state === 'menu') {
-            if (justPressed['ArrowDown'] || justPressed['KeyS']) { menuSel = (menuSel + 1) % 4; audio.playClick(); }
-            if (justPressed['ArrowUp'] || justPressed['KeyW']) { menuSel = (menuSel + 3) % 4; audio.playClick(); }
+            if (justPressed['ArrowDown'] || justPressed['KeyS']) { menuSel = (menuSel + 1) % 5; audio.playClick(); }
+            if (justPressed['ArrowUp'] || justPressed['KeyW']) { menuSel = (menuSel + 4) % 5; audio.playClick(); }
             if (justPressed['Space'] || justPressed['Enter']) {
                 audio.playClick();
                 if (menuSel === 0) startTransition('playing', () => startLevel(0));
                 else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
                 else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
+                else if (menuSel === 3) { state = 'explore'; }
                 else state = 'info';
             }
             drawMenu();
@@ -1650,6 +1778,10 @@
             }
             if (justPressed['Escape']) { state = 'menu'; audio.playClick(); }
             drawLevelSelect();
+        }
+        else if (state === 'explore') {
+            drawExplore();
+            if (justPressed['Space'] || justPressed['Escape']) { state = 'menu'; audio.playClick(); }
         }
         else if (state === 'info') {
             drawInfo();
