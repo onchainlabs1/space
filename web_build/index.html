@@ -438,7 +438,7 @@
     // Level configurations
     const LEVELS = [
         // Moon levels (1-3) - MUITO FÁCIL para crianças
-        { planet: 'moon', gravity: 0.03, fuel: 200, safeSpeed: 150, obstacles: 0, wind: 0, name: 'Moon 1' }, // Velocidade MUITO permissiva
+        { planet: 'moon', gravity: 0.025, fuel: 250, safeSpeed: 250, obstacles: 0, wind: 0, name: 'Moon 1' }, // EXTREMAMENTE fácil - quase qualquer velocidade funciona!
         { planet: 'moon', gravity: 0.04, fuel: 180, safeSpeed: 100, obstacles: 1, wind: 0, name: 'Moon 2' },
         { planet: 'moon', gravity: 0.05, fuel: 160, safeSpeed: 80, obstacles: 2, wind: 0.0005, name: 'Moon 3' },
         // Mars levels (4-6) - FÁCIL
@@ -457,7 +457,7 @@
         earth: { surface: '#3c8cc8', sky: '#000020', accent: '#2d6a9f' }
     };
     
-    const THRUST_POWER = { moon: 0.25, mars: 0.28, earth: 0.40 }; // Thrust mais forte, especialmente Moon
+    const THRUST_POWER = { moon: 0.30, mars: 0.28, earth: 0.40 }; // Thrust MUITO forte no Moon para facilitar
     const H_MOVE = { moon: 0.15, mars: 0.12, earth: 0.10 };
     const FUEL_RATE = 0.2; // Consome menos combustível
     
@@ -1742,13 +1742,15 @@
             
             // Check landing
             const bottom = lander.y + LANDER_H/2;
-            if (bottom >= PAD_Y) {
+            // No Moon 1, aceita pouso um pouco antes de tocar (mais fácil)
+            const landingThreshold = currentLevel === 0 ? PAD_Y - 10 : PAD_Y;
+            if (bottom >= landingThreshold) {
                 const landerLeft = lander.x - LANDER_W/2;
                 const landerRight = lander.x + LANDER_W/2;
                 const totalSpeed = Math.sqrt(lander.vx*lander.vx + lander.vy*lander.vy) * 100;
                 
-                // Tolerância horizontal maior no Moon 1 (muito fácil)
-                const horizontalTolerance = currentLevel === 0 ? 40 : 15;
+                // Tolerância horizontal MUITO maior no Moon 1 (extremamente fácil)
+                const horizontalTolerance = currentLevel === 0 ? 80 : 15; // 80 pixels de margem no Moon 1!
                 
                 if (landerLeft >= padX - horizontalTolerance && landerRight <= padX + PAD_W + horizontalTolerance) {
                     if (totalSpeed <= level.safeSpeed) {
