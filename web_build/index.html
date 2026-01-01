@@ -457,14 +457,14 @@
     const LEVELS = [
         // Moon levels (1-3) - MUITO FÁCIL para crianças
         { planet: 'moon', gravity: 0.025, fuel: 250, safeSpeed: 250, obstacles: 0, wind: 0, name: 'Moon 1' }, // EXTREMAMENTE fácil - quase qualquer velocidade funciona!
-        { planet: 'moon', gravity: 0.04, fuel: 180, safeSpeed: 100, obstacles: 1, wind: 0, name: 'Moon 2' },
-        { planet: 'moon', gravity: 0.05, fuel: 160, safeSpeed: 80, obstacles: 2, wind: 0.0005, name: 'Moon 3' },
+        { planet: 'moon', gravity: 0.035, fuel: 220, safeSpeed: 180, obstacles: 1, wind: 0, name: 'Moon 2' }, // MUITO fácil
+        { planet: 'moon', gravity: 0.045, fuel: 200, safeSpeed: 150, obstacles: 2, wind: 0.0005, name: 'Moon 3' }, // Fácil
         // Mars levels (4-6) - FÁCIL
-        { planet: 'mars', gravity: 0.08, fuel: 180, safeSpeed: 70, obstacles: 1, wind: 0.001, name: 'Mars 1' },
+        { planet: 'mars', gravity: 0.07, fuel: 200, safeSpeed: 130, obstacles: 1, wind: 0.001, name: 'Mars 1' }, // Fácil
         { planet: 'mars', gravity: 0.10, fuel: 160, safeSpeed: 60, obstacles: 3, wind: 0.002, name: 'Mars 2' },
         { planet: 'mars', gravity: 0.12, fuel: 140, safeSpeed: 55, obstacles: 4, wind: 0.003, name: 'Mars 3' },
         // Earth levels (7-9) - MÉDIO/DIFÍCIL
-        { planet: 'earth', gravity: 0.18, fuel: 200, safeSpeed: 60, obstacles: 2, wind: 0.002, name: 'Earth 1' },
+        { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 100, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
         { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 50, obstacles: 4, wind: 0.004, name: 'Earth 2' },
         { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 40, obstacles: 5, wind: 0.005, name: 'Earth 3' },
     ];
@@ -1961,15 +1961,21 @@
             
             // Check landing
             const bottom = lander.y + LANDER_H/2;
-            // No Moon 1, aceita pouso um pouco antes de tocar (mais fácil)
-            const landingThreshold = currentLevel === 0 ? PAD_Y - 10 : PAD_Y;
+            // Níveis fáceis: aceita pouso um pouco antes de tocar
+            const easyLevels = [0, 1, 2, 3, 6]; // Moon 1-3, Mars 1, Earth 1
+            const landingThreshold = easyLevels.includes(currentLevel) ? PAD_Y - 10 : PAD_Y;
             if (bottom >= landingThreshold) {
                 const landerLeft = lander.x - LANDER_W/2;
                 const landerRight = lander.x + LANDER_W/2;
                 const totalSpeed = Math.sqrt(lander.vx*lander.vx + lander.vy*lander.vy) * 100;
                 
-                // Tolerância horizontal MUITO maior no Moon 1 (extremamente fácil)
-                const horizontalTolerance = currentLevel === 0 ? 80 : 15; // 80 pixels de margem no Moon 1!
+                // Tolerância horizontal maior nos níveis fáceis
+                let horizontalTolerance = 15;
+                if (currentLevel === 0) horizontalTolerance = 80; // Moon 1 - extremamente fácil
+                else if (currentLevel === 1) horizontalTolerance = 60; // Moon 2 - muito fácil
+                else if (currentLevel === 2) horizontalTolerance = 50; // Moon 3 - fácil
+                else if (currentLevel === 3) horizontalTolerance = 45; // Mars 1 - fácil
+                else if (currentLevel === 6) horizontalTolerance = 40; // Earth 1 - fácil
                 
                 if (landerLeft >= padX - horizontalTolerance && landerRight <= padX + PAD_W + horizontalTolerance) {
                     if (totalSpeed <= level.safeSpeed) {
