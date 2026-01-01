@@ -1345,6 +1345,38 @@
     function drawMenu() {
         drawBackground('moon');
         
+        // Info panel - top right corner
+        const bestMoon = highScores.moon[0] || 0;
+        const bestMars = highScores.mars[0] || 0;
+        const bestEarth = highScores.earth[0] || 0;
+        
+        ctx.fillStyle = 'rgba(15, 20, 30, 0.7)';
+        ctx.beginPath();
+        ctx.roundRect(W - 200, 15, 185, 100, 8);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = '#4CAF50';
+        ctx.textAlign = 'left';
+        ctx.fillText(t('highscore'), W - 195, 35);
+        
+        ctx.font = '13px sans-serif';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(`🌙 ${bestMoon}`, W - 195, 55);
+        ctx.fillText(`🔴 ${bestMars}`, W - 195, 72);
+        ctx.fillText(`🌍 ${bestEarth}`, W - 195, 89);
+        
+        // Controls - top right, below scores
+        ctx.font = '12px sans-serif';
+        ctx.fillStyle = '#666';
+        const audioIcon = audio.muted ? '🔇' : '🔊';
+        const langText = lang === 'en' ? 'Magyar' : 'English';
+        ctx.fillText(`M=${audioIcon} L=${langText}`, W - 195, 108);
+        
         // Title with glow
         ctx.shadowColor = '#4CAF50';
         ctx.shadowBlur = 20;
@@ -1358,7 +1390,7 @@
         ctx.fillStyle = '#888';
         ctx.fillText(t('subtitle'), W/2, 145);
         
-        // Menu items - better organized spacing
+        // Menu items - centered, better spacing
         const items = [t('play'), t('levels'), t('tutorial'), t('explore'), t('info')];
         const menuStartY = 220;
         const menuSpacing = 65;
@@ -1378,21 +1410,10 @@
             
             ctx.font = 'bold 28px sans-serif';
             ctx.fillStyle = i === menuSel ? '#4CAF50' : '#fff';
+            ctx.textAlign = 'center';
             ctx.fillText(item, W/2, y + 8);
         });
         
-        // High score display - better organized
-        const bestMoon = highScores.moon[0] || 0;
-        const bestMars = highScores.mars[0] || 0;
-        const bestEarth = highScores.earth[0] || 0;
-        
-        ctx.font = '14px sans-serif';
-        ctx.fillStyle = '#555';
-        ctx.fillText(`${t('highscore')}: 🌙${bestMoon} | 🔴${bestMars} | 🌍${bestEarth}`, W/2, H - 50);
-        
-        // Controls - better organized
-        ctx.fillStyle = '#444';
-        ctx.fillText(`M = ${audio.muted ? '🔇' : '🔊'} | L = ${lang === 'en' ? 'Magyar' : 'English'}`, W/2, H - 25);
         ctx.textAlign = 'left';
     }
     
