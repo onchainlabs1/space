@@ -3190,13 +3190,23 @@
                 else if (tutorialStep === 2 && lander.y > H/2) tutorialStep = 3;
             }
             
+            // Don't process anything else if state changed
+            if (state !== 'playing') return;
+            
             updateMascot();
+            
+            // Don't process anything else if state changed
+            if (state !== 'playing') return;
             
             if (justPressed['Escape']) {
                 state = 'menu';
                 audio.playClick();
                 document.getElementById('touchControls').classList.remove('active');
+                return; // Exit immediately
             }
+            
+            // Don't process anything else if state changed
+            if (state !== 'playing') return;
             
             // Drawing
             ctx.save();
