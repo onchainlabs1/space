@@ -2818,13 +2818,17 @@
             // BOSS SYSTEM (Isolado - só processa se bossActive)
             // ============================================
             // CRITICAL: Only process boss if state is still 'playing'
+            // If state changed, immediately stop and exit
             if (state !== 'playing') {
-                // State changed, stop processing
+                // State changed, stop processing and exit immediately
                 bossActive = false;
                 bossData = null;
                 bossBullets = [];
                 playerBullets = [];
-            } else if (bossActive && bossData) {
+                return; // Exit immediately to prevent further processing
+            }
+            
+            if (bossActive && bossData) {
                 // Shooting controls (X or Shift) - NÃO interfere com Space bar
                 const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
                 if ((justPressed['KeyX'] || justPressed['ShiftLeft'] || justPressed['ShiftRight']) && canShoot) {
@@ -2947,7 +2951,8 @@
                             bossData = null;
                             bossBullets = [];
                             playerBullets = [];
-                            break;
+                            // CRITICAL: Exit immediately to prevent further processing
+                            return;
                         }
                         bossBullets.splice(i, 1);
                     } else if (bullet.y > H || bullet.x < 0 || bullet.x > W) {
@@ -3175,8 +3180,8 @@
             }
             drawObstacles();
             drawPowerups();
-            // Draw boss and bullets (isolado - só aparece se bossActive)
-            if (bossActive && bossData) {
+            // Draw boss and bullets (isolado - só aparece se bossActive e state ainda é 'playing')
+            if (state === 'playing' && bossActive && bossData) {
                 drawBoss();
                 drawBossBullets();
             }
