@@ -2817,18 +2817,7 @@
             // ============================================
             // BOSS SYSTEM (Isolado - só processa se bossActive)
             // ============================================
-            // CRITICAL: Only process boss if state is still 'playing'
-            // If state changed, immediately stop and exit
-            if (state !== 'playing') {
-                // State changed, stop processing and exit immediately
-                bossActive = false;
-                bossData = null;
-                bossBullets = [];
-                playerBullets = [];
-                return; // Exit immediately to prevent further processing
-            }
-            
-            if (bossActive && bossData) {
+            if (bossActive && bossData && state === 'playing') {
                 // Shooting controls (X or Shift) - NÃO interfere com Space bar
                 const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
                 if ((justPressed['KeyX'] || justPressed['ShiftLeft'] || justPressed['ShiftRight']) && canShoot) {
@@ -2872,15 +2861,7 @@
                 
                 // Update player bullets
                 for (let i = playerBullets.length - 1; i >= 0; i--) {
-                    // CRITICAL: Check state first - if changed, stop immediately
-                    if (state !== 'playing') {
-                        bossActive = false;
-                        bossData = null;
-                        bossBullets = [];
-                        playerBullets = [];
-                        break;
-                    }
-                    if (!bossData) break; // Safety check
+                    if (state !== 'playing' || !bossData) break; // Safety check
                     
                     const bullet = playerBullets[i];
                     bullet.y += bullet.vy;
@@ -2944,8 +2925,7 @@
                             bossData = null;
                             bossBullets = [];
                             playerBullets = [];
-                            // CRITICAL: Exit immediately to prevent further processing
-                            return;
+                            break; // Exit bullet loop
                         }
                         bossBullets.splice(i, 1);
                     } else if (bullet.y > H || bullet.x < 0 || bullet.x > W) {
