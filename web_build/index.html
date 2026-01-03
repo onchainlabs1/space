@@ -1142,12 +1142,73 @@
         playerLives = 2; // Reset lives to 2
         // Boss level doesn't use landing pad
         padX = -1000; // Hide pad off-screen
+        
+        // Gera asteroides e aliens para o boss level (longe da nave inicial)
+        obstacles = [];
+        for (let i = 0; i < 4; i++) {
+            const isAlien = Math.random() < 0.5;
+            // Posiciona nos cantos para não spawnar em cima da nave
+            const side = i % 4;
+            let x, y;
+            if (side === 0) { x = 80; y = 250; }
+            else if (side === 1) { x = W - 80; y = 250; }
+            else if (side === 2) { x = 150; y = 380; }
+            else { x = W - 150; y = 380; }
+            
+            obstacles.push({
+                x: x + (Math.random() - 0.5) * 40,
+                y: y + (Math.random() - 0.5) * 40,
+                radius: isAlien ? 18 : 15 + Math.random() * 8,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1,
+                type: isAlien ? 'alien' : 'asteroid',
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.1,
+                chaseSpeed: isAlien ? 0.25 : 0
+            });
+        }
     }
     
     function updateBoss() {
         if (!bossData || bossDefeated) return;
         
         const level = LEVELS[currentLevel];
+        
+        // Atualiza obstáculos do boss level (asteroides e aliens)
+        obstacles.forEach(obs => {
+            // Movimento
+            obs.x += obs.vx;
+            obs.y += obs.vy;
+            obs.rotation += obs.rotationSpeed;
+            
+            // Aliens perseguem o jogador
+            if (obs.type === 'alien' && obs.chaseSpeed > 0) {
+                const dx = lander.x - obs.x;
+                const dy = lander.y - obs.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 0 && dist < 300) {
+                    obs.vx += (dx / dist) * obs.chaseSpeed * 0.1;
+                    obs.vy += (dy / dist) * obs.chaseSpeed * 0.1;
+                    // Limita velocidade
+                    const maxSpeed = 2;
+                    const speed = Math.sqrt(obs.vx*obs.vx + obs.vy*obs.vy);
+                    if (speed > maxSpeed) {
+                        obs.vx = (obs.vx / speed) * maxSpeed;
+                        obs.vy = (obs.vy / speed) * maxSpeed;
+                    }
+                }
+            }
+            
+            // Bounce nas bordas
+            if (obs.x < obs.radius || obs.x > W - obs.radius) {
+                obs.vx *= -1;
+                obs.x = Math.max(obs.radius, Math.min(W - obs.radius, obs.x));
+            }
+            if (obs.y < 180 || obs.y > H - 100) {
+                obs.vy *= -1;
+                obs.y = Math.max(180, Math.min(H - 100, obs.y));
+            }
+        });
         
         // Player shooting with X key - rapid fire!
         if ((keys['KeyX'] || keys['ShiftLeft'] || keys['ShiftRight']) && 
