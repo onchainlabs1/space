@@ -694,6 +694,7 @@
             tut3: 'Land slowly on the green pad!',
             mascot_fast: 'Slow down!', mascot_fuel: 'Save fuel!', mascot_aim: 'Aim for the pad!',
             mascot_good: 'Great job!', mascot_try: 'You can do it!',
+            mascot_boss_shoot: 'Press X or Shift to shoot!', mascot_boss_weak: 'Aim for the green weak points!', mascot_boss_defeat: 'Defeat the boss first!',
             nextLevel: 'Next Level', menu: 'Menu',
             explore_gravity_title: 'What is Gravity?',
             explore_gravity_text: 'Gravity pulls everything down. On Earth, you don\'t float because gravity pulls you. In this game, your ship always falls because of gravity.',
@@ -718,6 +719,7 @@
             tut3: 'Lassan szállj le a zöld platformra!',
             mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a padot!',
             mascot_good: 'Szuper!', mascot_try: 'Menni fog!',
+            mascot_boss_shoot: 'Nyomj X-et vagy Shift-et a lövéshez!', mascot_boss_weak: 'Célozd a zöld gyenge pontokat!', mascot_boss_defeat: 'Először győzd le a főnököt!',
             nextLevel: 'Következő', menu: 'Menü',
             explore_gravity_title: 'Mi a gravitáció?',
             explore_gravity_text: 'A gravitáció mindent lefelé húz. A Földön nem lebegsz, mert a gravitáció húz. Ebben a játékban a hajó mindig leesik a gravitáció miatt.',
@@ -1272,12 +1274,28 @@
             const totalSpeed = Math.sqrt(lander.vx*lander.vx + lander.vy*lander.vy) * 100;
             const level = LEVELS[currentLevel];
             
-            if (totalSpeed > level.safeSpeed * 1.5 && Math.random() < 0.02) {
-                showMascot(t('mascot_fast'));
-            } else if (lander.fuel < level.fuel * 0.2 && Math.random() < 0.02) {
-                showMascot(t('mascot_fuel'));
-            } else if (Math.abs(lander.x - (padX + PAD_W/2)) > 200 && Math.random() < 0.01) {
-                showMascot(t('mascot_aim'));
+            // Boss level specific hints
+            if (level.boss && bossActive && bossData) {
+                if (!bossData.defeated && Math.random() < 0.03) {
+                    // Show shooting hint if player hasn't shot recently
+                    const timeSinceLastShot = Date.now() - lastShotTime;
+                    if (timeSinceLastShot > 3000 && playerBullets.length === 0) {
+                        showMascot(t('mascot_boss_shoot'));
+                    } else if (bossData.health > 50 && Math.random() < 0.5) {
+                        showMascot(t('mascot_boss_weak'));
+                    } else {
+                        showMascot(t('mascot_boss_defeat'));
+                    }
+                }
+            } else {
+                // Normal level hints
+                if (totalSpeed > level.safeSpeed * 1.5 && Math.random() < 0.02) {
+                    showMascot(t('mascot_fast'));
+                } else if (lander.fuel < level.fuel * 0.2 && Math.random() < 0.02) {
+                    showMascot(t('mascot_fuel'));
+                } else if (Math.abs(lander.x - (padX + PAD_W/2)) > 200 && Math.random() < 0.01) {
+                    showMascot(t('mascot_aim'));
+                }
             }
         }
     }
