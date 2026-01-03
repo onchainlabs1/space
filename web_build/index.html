@@ -2835,7 +2835,16 @@
             // ============================================
             // BOSS SYSTEM (Isolado - só processa se bossActive)
             // ============================================
-            if (bossActive && bossData && state === 'playing') {
+            // CRITICAL: Check state first - if not playing, skip boss entirely
+            if (state !== 'playing') {
+                // State changed, clean up boss and skip
+                if (bossActive) {
+                    bossActive = false;
+                    bossData = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                }
+            } else if (bossActive && bossData) {
                 // Shooting controls (X or Shift) - NÃO interfere com Space bar
                 const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
                 if ((justPressed['KeyX'] || justPressed['ShiftLeft'] || justPressed['ShiftRight']) && canShoot) {
@@ -3041,7 +3050,12 @@
                     bossBullets = [];
                     playerBullets = [];
                 }
+                // CRITICAL: Stop all processing immediately
+                return;
             }
+            
+            // Don't process anything else if state changed
+            if (state !== 'playing') return;
             
             checkPowerupCollision();
             
