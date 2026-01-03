@@ -3020,7 +3020,22 @@
             
             // Check landing (skip for boss level - boss uses different win condition)
             if (level.boss) {
-                // Boss level doesn't use landing - skip this section
+                // Boss level: check for ground collision (failure if hits ground)
+                const bottom = lander.y + LANDER_H/2;
+                if (bottom >= PAD_Y) {
+                    failReason = 'crash';
+                    particles.emitExplosion(lander.x, lander.y);
+                    screenShake = 20;
+                    flashAlpha = 0.5;
+                    flashColor = '#ff0000';
+                    audio.playCrash();
+                    state = 'failure';
+                    document.getElementById('touchControls').classList.remove('active');
+                    // Clean up boss
+                    bossData = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                }
             } else {
             // Níveis fáceis: aceita pouso um pouco antes de tocar
             const easyLevels = [0, 1, 2, 3, 6]; // Moon 1-3, Mars 1, Earth 1
