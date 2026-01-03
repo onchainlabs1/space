@@ -84,19 +84,6 @@
         .touch-btn.thrust:active, .touch-btn.thrust.pressed {
             background: rgba(255, 152, 0, 0.6);
         }
-        .touch-btn.shoot {
-            width: 70px;
-            height: 70px;
-            background: rgba(255, 193, 7, 0.3);
-            border-color: rgba(255, 193, 7, 0.6);
-            color: #ffc107;
-            position: absolute;
-            right: 20px;
-            top: 20px;
-        }
-        .touch-btn.shoot:active, .touch-btn.shoot.pressed {
-            background: rgba(255, 193, 7, 0.6);
-        }
         .side-btns { display: flex; gap: 15px; }
         .controls-hint {
             position: fixed;
@@ -273,7 +260,6 @@
             <button class="touch-btn" id="btnRight">→</button>
             </div>
         <button class="touch-btn thrust" id="btnThrust">🔥</button>
-        <button class="touch-btn shoot" id="btnShoot" style="display: none;">💥</button>
         </div>
         
     <!-- Controles de Menu - Direcional Elegante para Mobile -->
@@ -642,14 +628,6 @@
     let powerups = [];
     let terrain = [];
     
-    // Boss system (isolado - só usado quando level.boss === true)
-    let bossActive = false;
-    let bossData = null; // null quando não há chefe
-    let bossBullets = [];
-    let playerBullets = [];
-    let lastShotTime = 0;
-    const SHOOT_COOLDOWN = 500; // 0.5 segundos entre tiros
-    
     // Level configurations
     const LEVELS = [
         // Moon levels (1-3) - Progressão gradual de elementos
@@ -664,8 +642,6 @@
         { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 100, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
         { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 80, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
         { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 70, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
-        // Boss Level (10) - CHEFE FINAL
-        { planet: 'earth', gravity: 0.20, fuel: 300, safeSpeed: 80, obstacles: 0, wind: 0, name: 'Final Boss', boss: true }, // Nível especial do chefe
     ];
     
     const PLANET_COLORS = {
@@ -694,7 +670,6 @@
             tut3: 'Land slowly on the green pad!',
             mascot_fast: 'Slow down!', mascot_fuel: 'Save fuel!', mascot_aim: 'Aim for the pad!',
             mascot_good: 'Great job!', mascot_try: 'You can do it!',
-            mascot_boss_shoot: 'Press X or Shift to shoot!', mascot_boss_weak: 'Aim for the green weak points!', mascot_boss_defeat: 'Defeat the boss first!',
             nextLevel: 'Next Level', menu: 'Menu',
             explore_gravity_title: 'What is Gravity?',
             explore_gravity_text: 'Gravity pulls everything down. On Earth, you don\'t float because gravity pulls you. In this game, your ship always falls because of gravity.',
@@ -719,7 +694,6 @@
             tut3: 'Lassan szállj le a zöld platformra!',
             mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a padot!',
             mascot_good: 'Szuper!', mascot_try: 'Menni fog!',
-            mascot_boss_shoot: 'Nyomj X-et vagy Shift-et a lövéshez!', mascot_boss_weak: 'Célozd a zöld gyenge pontokat!', mascot_boss_defeat: 'Először győzd le a főnököt!',
             nextLevel: 'Következő', menu: 'Menü',
             explore_gravity_title: 'Mi a gravitáció?',
             explore_gravity_text: 'A gravitáció mindent lefelé húz. A Földön nem lebegsz, mert a gravitáció húz. Ebben a játékban a hajó mindig leesik a gravitáció miatt.',
@@ -764,7 +738,6 @@
         const btnLeft = document.getElementById('btnLeft');
         const btnRight = document.getElementById('btnRight');
         const btnThrust = document.getElementById('btnThrust');
-        const btnShoot = document.getElementById('btnShoot');
         
         const handleTouch = (btn, code, isStart) => {
             keys[code] = isStart;
@@ -778,27 +751,6 @@
         btnRight.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnRight, 'ArrowRight', false); });
         btnThrust.addEventListener('touchstart', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', true); });
         btnThrust.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', false); });
-        
-        // Shoot button (single press, not hold) - isolado
-        if (btnShoot) {
-            const handleShoot = (e) => {
-                e.preventDefault();
-                audio.init();
-                if (prevKeys['KeyX']) {
-                    prevKeys['KeyX'] = false;
-                }
-                keys['KeyX'] = true;
-                justPressed['KeyX'] = true;
-                btnShoot.classList.add('pressed');
-            setTimeout(() => {
-                    keys['KeyX'] = false;
-                    justPressed['KeyX'] = false;
-                    btnShoot.classList.remove('pressed');
-                }, 100);
-            };
-            btnShoot.addEventListener('touchstart', handleShoot);
-            btnShoot.addEventListener('click', handleShoot);
-        }
     }
     
     // Setup Menu Controls
@@ -1118,37 +1070,6 @@
         generateTerrain(level.planet, startX);
         generateObstacles(level.obstacles, startX);
         
-        // Initialize boss if this is a boss level (isolado - não modifica código existente)
-        if (level.boss) {
-            bossActive = true;
-            bossData = {
-                x: W / 2,
-                y: 100,
-                vx: 0.8,
-                health: 100,
-                maxHealth: 100,
-                shootTimer: 0,
-                phase: 1, // 1, 2, or 3
-                width: 120,
-                height: 80,
-                weakPoints: [
-                    { x: -40, y: 20, radius: 15, health: 33 },
-                    { x: 0, y: 10, radius: 15, health: 33 },
-                    { x: 40, y: 20, radius: 15, health: 33 }
-                ]
-            };
-            bossBullets = [];
-            playerBullets = [];
-            lastShotTime = 0;
-            // Pad appears only after boss is defeated
-            padX = W / 2 - PAD_W / 2;
-        } else {
-            bossActive = false;
-            bossData = null;
-            bossBullets = [];
-            playerBullets = [];
-        }
-        
         state = 'playing';
         document.getElementById('touchControls').classList.toggle('active', isMobile);
     }
@@ -1274,28 +1195,12 @@
             const totalSpeed = Math.sqrt(lander.vx*lander.vx + lander.vy*lander.vy) * 100;
             const level = LEVELS[currentLevel];
             
-            // Boss level specific hints
-            if (level.boss && bossActive && bossData) {
-                if (!bossData.defeated && Math.random() < 0.03) {
-                    // Show shooting hint if player hasn't shot recently
-                    const timeSinceLastShot = Date.now() - lastShotTime;
-                    if (timeSinceLastShot > 3000 && playerBullets.length === 0) {
-                        showMascot(t('mascot_boss_shoot'));
-                    } else if (bossData.health > 50 && Math.random() < 0.5) {
-                        showMascot(t('mascot_boss_weak'));
-                    } else {
-                        showMascot(t('mascot_boss_defeat'));
-                    }
-                }
-            } else {
-                // Normal level hints
-                if (totalSpeed > level.safeSpeed * 1.5 && Math.random() < 0.02) {
-                    showMascot(t('mascot_fast'));
-                } else if (lander.fuel < level.fuel * 0.2 && Math.random() < 0.02) {
-                    showMascot(t('mascot_fuel'));
-                } else if (Math.abs(lander.x - (padX + PAD_W/2)) > 200 && Math.random() < 0.01) {
-                    showMascot(t('mascot_aim'));
-                }
+            if (totalSpeed > level.safeSpeed * 1.5 && Math.random() < 0.02) {
+                showMascot(t('mascot_fast'));
+            } else if (lander.fuel < level.fuel * 0.2 && Math.random() < 0.02) {
+                showMascot(t('mascot_fuel'));
+            } else if (Math.abs(lander.x - (padX + PAD_W/2)) > 200 && Math.random() < 0.01) {
+                showMascot(t('mascot_aim'));
             }
         }
     }
@@ -1607,100 +1512,6 @@
         });
     }
     
-    // ============================================
-    // BOSS DRAWING FUNCTIONS (Isoladas)
-    // ============================================
-    function drawBoss() {
-        if (!bossData || !bossActive) return;
-        
-        ctx.save();
-        ctx.translate(bossData.x, bossData.y);
-        
-        // Boss body - nave alienígena gigante
-        const phaseColor = bossData.phase === 1 ? '#9b5cf6' : bossData.phase === 2 ? '#7c3aed' : '#6d28d9';
-        ctx.fillStyle = phaseColor;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = phaseColor;
-        
-        // Corpo principal (triangular invertido)
-        ctx.beginPath();
-        ctx.moveTo(0, -bossData.height/2);
-        ctx.lineTo(-bossData.width/2, bossData.height/2);
-        ctx.lineTo(0, bossData.height/2 - 20);
-        ctx.lineTo(bossData.width/2, bossData.height/2);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Detalhes
-        ctx.fillStyle = '#a78bfa';
-        ctx.beginPath();
-        ctx.arc(0, -bossData.height/4, bossData.width/6, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Weak points (mudam de cor conforme a vida)
-        bossData.weakPoints.forEach((wp, i) => {
-            const wx = wp.x;
-            const wy = wp.y;
-            const healthPct = wp.health / 33;
-            let color = '#4CAF50'; // Verde quando saudável
-            if (healthPct < 0.5) color = '#ffeb3b'; // Amarelo quando médio
-            if (healthPct < 0.25) color = '#ff5252'; // Vermelho quando fraco
-            
-            ctx.fillStyle = color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = color;
-            ctx.beginPath();
-            ctx.arc(wx, wy, wp.radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Brilho pulsante
-            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(Date.now()/200 + i) * 0.2})`;
-            ctx.beginPath();
-            ctx.arc(wx, wy, wp.radius * 0.6, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        
-        ctx.shadowBlur = 0;
-        ctx.restore();
-    }
-    
-    function drawBossBullets() {
-        if (!bossActive) return;
-        
-        // Player bullets
-        ctx.fillStyle = '#ffeb3b';
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = '#ff9800';
-        playerBullets.forEach(bullet => {
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
-            ctx.fill();
-            // Trail
-            ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y + 5, bullet.radius * 1.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ffeb3b';
-        });
-        
-        // Boss bullets
-        ctx.fillStyle = '#9c27b0';
-        ctx.shadowColor = '#7b1fa2';
-        bossBullets.forEach(bullet => {
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
-            ctx.fill();
-            // Trail
-            ctx.fillStyle = 'rgba(156, 39, 176, 0.3)';
-            ctx.beginPath();
-            ctx.arc(bullet.x - bullet.vx * 2, bullet.y - bullet.vy * 2, bullet.radius * 1.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#9c27b0';
-        });
-        
-        ctx.shadowBlur = 0;
-    }
-    
     function drawLander() {
         const x = lander.x, y = lander.y;
         
@@ -1836,49 +1647,6 @@
     
     function drawHUD() {
         const level = LEVELS[currentLevel];
-        
-        // Boss health bar (isolado - só aparece se bossActive)
-        if (bossActive && bossData && !bossData.defeated) {
-            const barWidth = 300;
-            const barHeight = 20;
-            const barX = W / 2 - barWidth / 2;
-            const barY = 15;
-            
-            // Background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, barWidth, barHeight, 10);
-            ctx.fill();
-            
-            // Health bar
-            const healthPct = bossData.health / bossData.maxHealth;
-            let healthColor = '#4CAF50';
-            if (healthPct < 0.66) healthColor = '#ffeb3b';
-            if (healthPct < 0.33) healthColor = '#ff5252';
-            
-            ctx.fillStyle = healthColor;
-            ctx.beginPath();
-            ctx.roundRect(barX + 2, barY + 2, (barWidth - 4) * healthPct, barHeight - 4, 8);
-            ctx.fill();
-            
-            // Border
-            ctx.strokeStyle = '#4CAF50';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Text
-            ctx.font = 'bold 14px sans-serif';
-            ctx.fillStyle = '#fff';
-            ctx.textAlign = 'center';
-            ctx.fillText('BOSS', W / 2, barY + 15);
-            ctx.textAlign = 'left';
-            
-            // Shoot indicator
-            const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
-            ctx.font = '12px sans-serif';
-            ctx.fillStyle = canShoot ? '#4CAF50' : '#888';
-            ctx.fillText('X/Shift = Shoot', W - 120, 35);
-        }
         
         // Main HUD panel
         ctx.fillStyle = 'rgba(15, 20, 30, 0.9)';
@@ -2222,11 +1990,7 @@
             // Planet icon
             const icons = { moon: '🌙', mars: '🔴', earth: '🌍' };
             ctx.font = '24px sans-serif';
-            if (level.boss) {
-                ctx.fillText('👾', x - 40, y + 5); // Boss icon
-            } else {
-                ctx.fillText(icons[level.planet], x - 40, y + 5);
-            }
+            ctx.fillText(icons[level.planet], x - 40, y + 5);
             
             // Level name
             ctx.font = 'bold 18px sans-serif';
@@ -2236,13 +2000,8 @@
             // Difficulty indicator
             ctx.font = '12px sans-serif';
             ctx.fillStyle = '#888';
-            if (level.boss) {
-                ctx.fillStyle = '#9c27b0';
-                ctx.fillText('BOSS', x + 15, y + 20);
-            } else {
-                const diff = ['Easy', 'Med', 'Hard'][i % 3];
-                ctx.fillText(diff, x + 15, y + 20);
-            }
+            const diff = ['Easy', 'Med', 'Hard'][i % 3];
+            ctx.fillText(diff, x + 15, y + 20);
             
             // Best score
             if (highScores[level.planet]?.length > 0) {
@@ -2820,168 +2579,9 @@
             }
             
             const level = LEVELS[currentLevel];
+            
+            // Show/hide shoot button for boss level
             const gravityMod = lander.slowmo ? 0.3 : 1; // Redução de 70% na gravidade (mais forte!)
-            
-            // Show/hide shoot button for boss level (isolado)
-            const btnShoot = document.getElementById('btnShoot');
-            if (btnShoot) {
-                if (bossActive && bossData && !bossData.defeated) {
-                    btnShoot.style.display = 'flex';
-                } else {
-                    btnShoot.style.display = 'none';
-                }
-            }
-            
-            // ============================================
-            // BOSS SYSTEM (Isolado - só processa se bossActive)
-            // ============================================
-            // CRITICAL: Check state first - if not playing, skip boss entirely
-            if (state !== 'playing') {
-                // State changed, clean up boss and skip
-                if (bossActive) {
-                    bossActive = false;
-                    bossData = null;
-                    bossBullets = [];
-                    playerBullets = [];
-                }
-            } else if (bossActive && bossData) {
-                // Shooting controls (X or Shift) - NÃO interfere com Space bar
-                const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
-                if ((justPressed['KeyX'] || justPressed['ShiftLeft'] || justPressed['ShiftRight']) && canShoot) {
-                    playerBullets.push({
-                        x: lander.x,
-                        y: lander.y - LANDER_H/2,
-                        vy: -8,
-                        radius: 4
-                    });
-                    lastShotTime = Date.now();
-                    audio.playClick();
-                }
-                
-                // Update boss movement
-                bossData.x += bossData.vx;
-                if (bossData.x < bossData.width/2 || bossData.x > W - bossData.width/2) {
-                    bossData.vx *= -1;
-                }
-                
-                // Update boss health phases
-                if (bossData.health > 66) bossData.phase = 1;
-                else if (bossData.health > 33) bossData.phase = 2;
-                else if (bossData.health > 0) bossData.phase = 3;
-                
-                // Boss shoots periodically
-                bossData.shootTimer++;
-                if (bossData.shootTimer > 120 - (bossData.phase * 20)) {
-                    bossData.shootTimer = 0;
-                    // Boss shoots 2-3 bullets
-                    for (let i = 0; i < 2 + bossData.phase; i++) {
-                        const angle = Math.PI / 2 + (Math.random() - 0.5) * 0.5;
-                        bossBullets.push({
-                            x: bossData.x + (Math.random() - 0.5) * 40,
-                            y: bossData.y + bossData.height/2,
-                            vx: Math.sin(angle) * 2,
-                            vy: Math.cos(angle) * 3,
-                            radius: 6
-                        });
-                    }
-                }
-                
-                // Update player bullets
-                for (let i = playerBullets.length - 1; i >= 0; i--) {
-                    if (state !== 'playing' || !bossData) break; // Safety check
-                    
-                    const bullet = playerBullets[i];
-                    bullet.y += bullet.vy;
-                    
-                    // Check collision with boss weak points
-                    let hit = false;
-                    if (bossData && bossData.weakPoints) {
-                        for (let wp of bossData.weakPoints) {
-                            const wx = bossData.x + wp.x;
-                            const wy = bossData.y + wp.y;
-                            const dist = Math.sqrt((bullet.x - wx) ** 2 + (bullet.y - wy) ** 2);
-                            if (dist < wp.radius + bullet.radius) {
-                                bossData.health -= 2;
-                                wp.health -= 2;
-                                particles.emit(bullet.x, bullet.y, 10, {
-                                    angle: 0, spread: Math.PI * 2, speed: 3, life: 20, size: 4,
-                                    colors: ['#ffeb3b', '#ff9800', '#ff5722']
-                                });
-                                audio.playPowerup();
-                                hit = true;
-                                screenShake = 5;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (hit || bullet.y < 0) {
-                        playerBullets.splice(i, 1);
-                    }
-                }
-                
-                // Update boss bullets
-                for (let i = bossBullets.length - 1; i >= 0; i--) {
-                    if (state !== 'playing') break; // Safety check
-                    
-                    const bullet = bossBullets[i];
-                    bullet.x += bullet.vx;
-                    bullet.y += bullet.vy;
-                    
-                    // Check collision with lander
-                    const dist = Math.sqrt((bullet.x - lander.x) ** 2 + (bullet.y - lander.y) ** 2);
-                    if (dist < bullet.radius + LANDER_W/2) {
-                        if (lander.shield) {
-                            lander.shield = false;
-                            lander.shieldCooldown = 30;
-                            particles.emit(lander.x, lander.y, 10, {
-                                angle: 0, spread: Math.PI * 2, speed: 3, life: 20, size: 5,
-                                colors: ['#4a9eff', '#ffffff']
-                            });
-                            audio.playPowerup();
-                        } else {
-                            // Hit by boss bullet
-                            failReason = 'hit';
-                            particles.emitExplosion(lander.x, lander.y);
-                            screenShake = 20;
-                            audio.playCrash();
-                            state = 'failure';
-                            document.getElementById('touchControls').classList.remove('active');
-                            // Clean up boss
-                            bossActive = false;
-                            bossData = null;
-                            bossBullets = [];
-                            playerBullets = [];
-                            break; // Exit bullet loop
-                        }
-                        bossBullets.splice(i, 1);
-                    } else if (bullet.y > H || bullet.x < 0 || bullet.x > W) {
-                        bossBullets.splice(i, 1);
-                    }
-                }
-                
-                // Check if boss is defeated
-                if (bossData && bossData.health <= 0) {
-                    // Big explosion
-                    particles.emit(bossData.x, bossData.y, 50, {
-                        angle: 0, spread: Math.PI * 2, speed: 5, life: 40, size: 8,
-                        colors: ['#ff5722', '#ff9800', '#ffeb3b', '#9c27b0']
-                    });
-                    audio.playSuccess();
-                    screenShake = 30;
-                    // Pad appears
-                    padX = W / 2 - PAD_W / 2;
-                    // Mark boss as defeated (allows landing)
-                    bossData.defeated = true;
-                }
-            }
-            
-            // CRITICAL: Check state before physics - if changed, stop immediately
-            if (state !== 'playing') {
-                return; // Stop all processing if state changed
-            }
-            
-            // Physics (NÃO MODIFICADA - funciona normalmente)
             
             // Physics
             lander.thrust = keys['Space'] || keys['ArrowUp'] || keys['KeyW'];
@@ -3048,19 +2648,13 @@
                 audio.playCrash();
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
-                // Clean up boss if active (only boss-specific change)
-                if (bossActive) {
-                    bossActive = false;
-                    bossData = null;
+                // Stop boss from continuing
+                if (level.boss && boss) {
+                    boss = null;
                     bossBullets = [];
                     playerBullets = [];
                 }
-                // CRITICAL: Stop all processing immediately
-                return;
             }
-            
-            // Don't process anything else if state changed
-            if (state !== 'playing') return;
             
             checkPowerupCollision();
             
@@ -3073,34 +2667,9 @@
                 audio.playCrash();
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
-                // Stop boss from continuing
-                bossActive = false;
-                bossData = null;
-                bossBullets = [];
-                playerBullets = [];
-                return; // Exit early
             }
             
-            // Check if lander fell off screen or crashed into ground (before landing check)
-            if (bottom > H + 50) {
-                failReason = 'hit';
-                particles.emitExplosion(lander.x, lander.y);
-                screenShake = 20;
-                audio.playCrash();
-                state = 'failure';
-                document.getElementById('touchControls').classList.remove('active');
-                // Stop boss from continuing
-                bossActive = false;
-                bossData = null;
-                bossBullets = [];
-                playerBullets = [];
-                return; // Exit early
-            }
-            
-            // Check landing (skip if boss is active and not defeated)
-            if (bossActive && bossData && !bossData.defeated) {
-                // Can't land until boss is defeated - skip landing check
-            } else {
+            // Check landing
             // Níveis fáceis: aceita pouso um pouco antes de tocar
             const easyLevels = [0, 1, 2, 3, 6]; // Moon 1-3, Mars 1, Earth 1
             const landingThreshold = easyLevels.includes(currentLevel) ? PAD_Y - 10 : PAD_Y;
@@ -3142,24 +2711,14 @@
                         // Marca este nível como completo
                         completedLevels.add(currentLevel);
                         state = 'success';
-                        document.getElementById('touchControls').classList.remove('active');
+                        
                         // Música removida - apenas efeitos sonoros
-                        return; // Exit immediately after success
                     } else {
                         failReason = 'tooFast';
                         particles.emitExplosion(lander.x, lander.y);
                         screenShake = 15;
                         audio.playCrash();
                         state = 'failure';
-                        document.getElementById('touchControls').classList.remove('active');
-                        // Clean up boss if active
-                        if (bossActive) {
-                            bossActive = false;
-                            bossData = null;
-                            bossBullets = [];
-                            playerBullets = [];
-                        }
-                        return; // Exit immediately after failure
                     }
                 } else {
                     failReason = 'missed';
@@ -3167,21 +2726,9 @@
                     screenShake = 15;
                     audio.playCrash();
                     state = 'failure';
-                    document.getElementById('touchControls').classList.remove('active');
-                    // Clean up boss if active
-                    if (bossActive) {
-                        bossActive = false;
-                        bossData = null;
-                        bossBullets = [];
-                        playerBullets = [];
-                    }
-                    return; // Exit immediately after failure
                 }
+                document.getElementById('touchControls').classList.remove('active');
             }
-            } // End of landing check (boss check)
-            
-            // Don't process anything else if state changed
-            if (state !== 'playing') return;
             
             // Tutorial auto-advance
             if (showTutorial && tutorialStep <= 2) {
@@ -3190,23 +2737,13 @@
                 else if (tutorialStep === 2 && lander.y > H/2) tutorialStep = 3;
             }
             
-            // Don't process anything else if state changed
-            if (state !== 'playing') return;
-            
             updateMascot();
-            
-            // Don't process anything else if state changed
-            if (state !== 'playing') return;
             
             if (justPressed['Escape']) {
                 state = 'menu';
                 audio.playClick();
                 document.getElementById('touchControls').classList.remove('active');
-                return; // Exit immediately
             }
-            
-            // Don't process anything else if state changed
-            if (state !== 'playing') return;
             
             // Drawing
             ctx.save();
@@ -3215,27 +2752,9 @@
             drawBackground(level.planet);
             drawTerrain(level.planet);
             drawTrail();
-            // Pad only appears if boss is defeated or no boss
-            if (!bossActive || (bossData && bossData.defeated)) {
-                drawPad();
-            }
+            drawPad();
             drawObstacles();
             drawPowerups();
-            // Draw boss and bullets (isolado - só aparece se bossActive e state ainda é 'playing')
-            // CRITICAL: Double check state before drawing boss to prevent errors
-            if (state === 'playing' && bossActive && bossData && !bossData.defeated) {
-                try {
-                    drawBoss();
-                    drawBossBullets();
-                } catch (e) {
-                    // If error drawing boss, clean up and continue
-                    console.error('Error drawing boss:', e);
-                    bossActive = false;
-                    bossData = null;
-                    bossBullets = [];
-                    playerBullets = [];
-                }
-            }
             particles.update();
             particles.draw(ctx);
             drawLander();
