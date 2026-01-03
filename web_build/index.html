@@ -2976,6 +2976,11 @@
                 }
             }
             
+            // CRITICAL: Check state again before physics - if changed, exit immediately
+            if (state !== 'playing') {
+                return; // Exit immediately to prevent physics from running
+            }
+            
             // Physics (NÃO MODIFICADA - funciona normalmente)
             
             // Physics
