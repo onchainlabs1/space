@@ -270,9 +270,9 @@
             <button class="touch-btn" id="btnLeft">←</button>
             <button class="touch-btn shoot" id="btnShoot" style="display: none;">💥</button>
             <button class="touch-btn" id="btnRight">→</button>
-        </div>
+            </div>
         <button class="touch-btn thrust" id="btnThrust">🔥</button>
-    </div>
+        </div>
         
     <!-- Controles de Menu - Direcional Elegante para Mobile -->
     <div class="menu-controls" id="menuControls">
@@ -1395,26 +1395,33 @@
         ctx.shadowBlur = 0;
         ctx.textAlign = 'left';
         
-        // Draw player lives (hearts)
-        ctx.font = '24px sans-serif';
-        ctx.textAlign = 'right';
+        // Draw player lives (hearts) - below boss bar, centered
+        ctx.font = '28px sans-serif';
+        ctx.textAlign = 'center';
         let heartsStr = '';
         for (let i = 0; i < 2; i++) {
             heartsStr += i < playerLives ? '❤️' : '🖤';
         }
-        ctx.fillText(heartsStr, W - 20, 60);
+        // Background for hearts
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(W/2 - 45, 50, 90, 35);
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(W/2 - 45, 50, 90, 35);
+        ctx.fillText(heartsStr, W/2, 78);
         
-        // Invulnerability indicator (flashing)
+        // Invulnerability indicator (flashing) - below hearts
         if (lander.shieldCooldown > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
-            ctx.font = '12px sans-serif';
+            ctx.font = '14px sans-serif';
             ctx.fillStyle = '#ffeb3b';
-            ctx.fillText('⚡ INVULNERABLE', W - 20, 80);
+            ctx.fillText('⚡ INVULNERABLE ⚡', W/2, 105);
         }
         
-        // Draw shoot hint
+        // Draw shoot hint - bottom right
         ctx.font = '12px sans-serif';
         ctx.fillStyle = '#888';
-        ctx.fillText('X/Shift = Shoot', W - 20, 100);
+        ctx.textAlign = 'right';
+        ctx.fillText('X/Shift = Shoot', W - 20, H - 60);
         ctx.textAlign = 'left';
     }
     
