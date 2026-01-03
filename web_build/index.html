@@ -2668,39 +2668,45 @@
     function drawExplore() {
         drawBackground('moon');
         
-        // Cards data
+        // Cards data - centered layout 2x2
+        const cardW = 320;
+        const cardH = 160;
+        const gap = 30;
+        const startX = (W - cardW * 2 - gap) / 2;
+        const startY = 100;
+        
         const cards = [
             {
-                icon: '⬇️',
+                icon: '🍎',  // Apple falling = gravity
                 title: t('explore_gravity_title'),
                 text: t('explore_gravity_text'),
                 color: '#4CAF50',
-                x: 120,
-                y: 120
+                x: startX,
+                y: startY
             },
             {
                 icon: '🌙',
                 title: t('explore_moon_title'),
                 text: t('explore_moon_text'),
-                color: '#b4b4be',
-                x: 520,
-                y: 120
+                color: '#e8e8f0',
+                x: startX + cardW + gap,
+                y: startY
             },
             {
-                icon: '🔴',
+                icon: '🪐',  // Planeta ao invés de círculo vermelho
                 title: t('explore_mars_title'),
                 text: t('explore_mars_text'),
-                color: '#c86432',
-                x: 120,
-                y: 300
+                color: '#ff6b35',
+                x: startX,
+                y: startY + cardH + gap
             },
             {
                 icon: '🌍',
                 title: t('explore_earth_title'),
                 text: t('explore_earth_text'),
-                color: '#3c8cc8',
-                x: 520,
-                y: 300
+                color: '#4a9eff',
+                x: startX + cardW + gap,
+                y: startY + cardH + gap
             }
         ];
         
@@ -2819,19 +2825,19 @@
                 }
                 
                 // Card background with subtle gradient
-                const cardGrad = ctx.createLinearGradient(card.x, card.y, card.x, card.y + 140);
+                const cardGrad = ctx.createLinearGradient(card.x, card.y, card.x, card.y + cardH);
                 cardGrad.addColorStop(0, isSelected ? 'rgba(25, 30, 40, 0.98)' : 'rgba(20, 25, 35, 0.95)');
                 cardGrad.addColorStop(1, isSelected ? 'rgba(18, 23, 33, 0.98)' : 'rgba(15, 20, 30, 0.95)');
                 ctx.fillStyle = cardGrad;
                 ctx.beginPath();
-                ctx.roundRect(card.x, card.y, 320, 140, 14);
+                ctx.roundRect(card.x, card.y, cardW, cardH, 16);
                 ctx.fill();
                 
                 ctx.shadowBlur = 0;
                 
                 // Card border (highlight if selected)
                 ctx.strokeStyle = card.color;
-                ctx.lineWidth = isSelected ? 4 : 3;
+                ctx.lineWidth = isSelected ? 3 : 2;
                 ctx.stroke();
                 
                 // Inner border highlight for selected
@@ -2839,29 +2845,29 @@
                     ctx.strokeStyle = card.color + '40';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    ctx.roundRect(card.x + 2, card.y + 2, 316, 136, 12);
+                    ctx.roundRect(card.x + 3, card.y + 3, cardW - 6, cardH - 6, 14);
                     ctx.stroke();
                 }
                 
                 // Icon with subtle glow when selected
                 if (isSelected) {
                     ctx.shadowColor = card.color;
-                    ctx.shadowBlur = 10;
+                    ctx.shadowBlur = 15;
                 }
-                ctx.font = '60px sans-serif';
-                ctx.fillText(card.icon, card.x + 160, card.y + 65);
+                ctx.font = '56px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(card.icon, card.x + cardW/2, card.y + 60);
                 ctx.shadowBlur = 0;
                 
                 // Title
-                ctx.font = 'bold 26px sans-serif';
+                ctx.font = 'bold 22px sans-serif';
                 ctx.fillStyle = card.color;
-                ctx.textAlign = 'center';
-                ctx.fillText(card.title, card.x + 160, card.y + 115);
+                ctx.fillText(card.title, card.x + cardW/2, card.y + 110);
                 
                 // Click hint
-                ctx.font = '13px sans-serif';
-                ctx.fillStyle = isSelected ? '#888' : '#666';
-                ctx.fillText('Click to learn more', card.x + 160, card.y + 135);
+                ctx.font = '12px sans-serif';
+                ctx.fillStyle = isSelected ? '#aaa' : '#666';
+                ctx.fillText('Click to learn more', card.x + cardW/2, card.y + cardH - 15);
             });
             
             // Back button
