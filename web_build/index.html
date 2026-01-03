@@ -1078,6 +1078,8 @@
         particles.clear();
         screenShake = 0;
         tutorialStep = 0;
+        tutorialTimer = 0;
+        showTutorial = true;
         
         // Set pad position
         padX = 100 + Math.random() * (W - 200 - PAD_W);
@@ -2283,25 +2285,56 @@
         ctx.restore();
     }
     
+    let tutorialTimer = 0;
+    const TUTORIAL_DURATION = 180; // 3 segundos (60fps)
+    
     function drawTutorial() {
         if (!showTutorial || tutorialStep > 2) return;
         
-        const messages = [t('tut1'), t('tut2'), t('tut3')];
+        // Auto-avança o tutorial após alguns segundos
+        tutorialTimer++;
+        if (tutorialTimer > TUTORIAL_DURATION) {
+            tutorialTimer = 0;
+            tutorialStep++;
+            if (tutorialStep > 2) showTutorial = false;
+        }
+        
+        const level = LEVELS[currentLevel];
+        let messages;
+        
+        // Mensagens diferentes para o boss
+        if (level && level.boss) {
+            messages = [
+                lang === 'hu' ? 'X = Lövés a főellenségre!' : 'X = Shoot the boss!',
+                lang === 'hu' ? 'Célozd a zöld pontokat!' : 'Aim for the green weak spots!',
+                lang === 'hu' ? 'Ne engedd, hogy eltaláljanak!' : 'Dodge the purple bullets!'
+            ];
+        } else {
+            messages = [t('tut1'), t('tut2'), t('tut3')];
+        }
         const msg = messages[tutorialStep];
         
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        // Fade out effect
+        const fadeOut = tutorialTimer > TUTORIAL_DURATION - 30 ? (TUTORIAL_DURATION - tutorialTimer) / 30 : 1;
+        
+        // Posição no TOPO da tela, compacto
+        const boxY = 120;
+        
+        ctx.globalAlpha = fadeOut * 0.9;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.beginPath();
-        ctx.roundRect(W/2 - 200, H/2 - 30, 400, 60, 10);
+        ctx.roundRect(W/2 - 180, boxY, 360, 45, 8);
         ctx.fill();
         
         ctx.strokeStyle = '#4CAF50';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.stroke();
         
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 18px sans-serif';
+        ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(msg, W/2, H/2 + 5);
+        ctx.fillText('🎮 ' + msg, W/2, boxY + 28);
+        ctx.globalAlpha = 1;
     }
     
     // ============================================
