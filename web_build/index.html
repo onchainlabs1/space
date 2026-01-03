@@ -3142,14 +3142,24 @@
                         // Marca este nível como completo
                         completedLevels.add(currentLevel);
                         state = 'success';
-                        
+                        document.getElementById('touchControls').classList.remove('active');
                         // Música removida - apenas efeitos sonoros
+                        return; // Exit immediately after success
                     } else {
                         failReason = 'tooFast';
                         particles.emitExplosion(lander.x, lander.y);
                         screenShake = 15;
                         audio.playCrash();
                         state = 'failure';
+                        document.getElementById('touchControls').classList.remove('active');
+                        // Clean up boss if active
+                        if (bossActive) {
+                            bossActive = false;
+                            bossData = null;
+                            bossBullets = [];
+                            playerBullets = [];
+                        }
+                        return; // Exit immediately after failure
                     }
                 } else {
                     failReason = 'missed';
@@ -3157,10 +3167,21 @@
                     screenShake = 15;
                     audio.playCrash();
                     state = 'failure';
+                    document.getElementById('touchControls').classList.remove('active');
+                    // Clean up boss if active
+                    if (bossActive) {
+                        bossActive = false;
+                        bossData = null;
+                        bossBullets = [];
+                        playerBullets = [];
+                    }
+                    return; // Exit immediately after failure
                 }
-                document.getElementById('touchControls').classList.remove('active');
             }
             } // End of landing check (boss check)
+            
+            // Don't process anything else if state changed
+            if (state !== 'playing') return;
             
             // Tutorial auto-advance
             if (showTutorial && tutorialStep <= 2) {
