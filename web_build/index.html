@@ -684,7 +684,7 @@
             play: 'Play', levels: 'Levels', tutorial: 'Tutorial', explore: 'Explore', info: 'Info', back: 'Back',
             moon: 'Moon', mars: 'Mars', earth: 'Earth',
             altitude: 'Alt', speed: 'Spd', fuel: 'Fuel',
-            success: 'Perfect Landing!', score: 'Score', total: 'Total', again: 'SPACE = Continue',
+            success: 'Perfect Landing!', boss_victory: '🏆 BOSS DEFEATED! 🏆', score: 'Score', total: 'Total', again: 'SPACE = Continue',
             failure: 'Try Again!', tooFast: 'Too fast!', noFuel: 'Out of fuel!', missed: 'Missed!', hit: 'Hit obstacle!',
             controls: '↑=thrust ←→=move',
             level: 'Level', locked: 'Locked', highscore: 'Best',
@@ -709,7 +709,7 @@
             play: 'Játék', levels: 'Pályák', tutorial: 'Bemutató', explore: 'Felfedezés', info: 'Infó', back: 'Vissza',
             moon: 'Hold', mars: 'Mars', earth: 'Föld',
             altitude: 'Mag', speed: 'Seb', fuel: 'Üzemanyag',
-            success: 'Sikeres Landolás!', score: 'Pont', total: 'Össz', again: 'SPACE = Tovább',
+            success: 'Sikeres Landolás!', boss_victory: '🏆 FŐELLENSÉG LEGYŐZVE! 🏆', score: 'Pont', total: 'Össz', again: 'SPACE = Tovább',
             failure: 'Próbáld Újra!', tooFast: 'Túl gyorsan!', noFuel: 'Nincs üzemanyag!', missed: 'Rossz hely!', hit: 'Ütközés!',
             controls: '↑=tolás ←→=mozgás',
             level: 'Pálya', locked: 'Zárolva', highscore: 'Rekord',
@@ -2432,7 +2432,8 @@
             
             ctx.font = 'bold 48px sans-serif';
             ctx.fillStyle = '#4CAF50';
-            ctx.fillText('✓ ' + t('success'), W/2, 180);
+            const isBossLevel = LEVELS[currentLevel] && LEVELS[currentLevel].boss;
+            ctx.fillText(isBossLevel ? t('boss_victory') : '✓ ' + t('success'), W/2, 180);
             
             ctx.font = 'bold 32px sans-serif';
             ctx.fillStyle = '#ffeb3b';
@@ -2451,12 +2452,13 @@
             ctx.fillText('⌂ ' + t('menu'), W/2, 420);
         } else {
             // Tela de sucesso normal para níveis intermediários
-            ctx.shadowColor = '#4CAF50';
+            const isBossLevel = LEVELS[currentLevel] && LEVELS[currentLevel].boss;
+            ctx.shadowColor = isBossLevel ? '#ffd700' : '#4CAF50';
             ctx.shadowBlur = 20;
-            ctx.font = 'bold 52px sans-serif';
-            ctx.fillStyle = '#4CAF50';
+            ctx.font = isBossLevel ? 'bold 44px sans-serif' : 'bold 52px sans-serif';
+            ctx.fillStyle = isBossLevel ? '#ffd700' : '#4CAF50';
             ctx.textAlign = 'center';
-            ctx.fillText('✓ ' + t('success'), W/2, 150);
+            ctx.fillText(isBossLevel ? t('boss_victory') : '✓ ' + t('success'), W/2, 150);
             ctx.shadowBlur = 0;
             
             ctx.font = 'bold 36px sans-serif';
