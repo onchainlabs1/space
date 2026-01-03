@@ -788,7 +788,7 @@
                 keys['KeyX'] = true;
                 justPressed['KeyX'] = true;
                 btnShoot.classList.add('pressed');
-                setTimeout(() => {
+            setTimeout(() => {
                     keys['KeyX'] = false;
                     justPressed['KeyX'] = false;
                     btnShoot.classList.remove('pressed');
@@ -2817,7 +2817,14 @@
             // ============================================
             // BOSS SYSTEM (Isolado - só processa se bossActive)
             // ============================================
-            if (bossActive && bossData && state === 'playing') {
+            // CRITICAL: Only process boss if state is still 'playing'
+            if (state !== 'playing') {
+                // State changed, stop processing
+                bossActive = false;
+                bossData = null;
+                bossBullets = [];
+                playerBullets = [];
+            } else if (bossActive && bossData) {
                 // Shooting controls (X or Shift) - NÃO interfere com Space bar
                 const canShoot = (Date.now() - lastShotTime) > SHOOT_COOLDOWN;
                 if ((justPressed['KeyX'] || justPressed['ShiftLeft'] || justPressed['ShiftRight']) && canShoot) {
@@ -2861,7 +2868,15 @@
                 
                 // Update player bullets
                 for (let i = playerBullets.length - 1; i >= 0; i--) {
-                    if (state !== 'playing' || !bossData) break; // Safety check
+                    // CRITICAL: Check state first - if changed, stop immediately
+                    if (state !== 'playing') {
+                        bossActive = false;
+                        bossData = null;
+                        bossBullets = [];
+                        playerBullets = [];
+                        break;
+                    }
+                    if (!bossData) break; // Safety check
                     
                     const bullet = playerBullets[i];
                     bullet.y += bullet.vy;
@@ -2895,7 +2910,14 @@
                 
                 // Update boss bullets
                 for (let i = bossBullets.length - 1; i >= 0; i--) {
-                    if (state !== 'playing') break; // Safety check
+                    // CRITICAL: Check state first - if changed, stop immediately
+                    if (state !== 'playing') {
+                        bossActive = false;
+                        bossData = null;
+                        bossBullets = [];
+                        playerBullets = [];
+                        break;
+                    }
                     
                     const bullet = bossBullets[i];
                     bullet.x += bullet.vx;
@@ -3016,12 +3038,13 @@
                 audio.playCrash();
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
-                // Stop boss from continuing
-                if (level.boss && boss) {
-                    boss = null;
-                    bossBullets = [];
-                    playerBullets = [];
-                }
+                // Stop boss from continuing - CRITICAL: Clear boss immediately
+                bossActive = false;
+                bossData = null;
+                bossBullets = [];
+                playerBullets = [];
+                // Exit early to prevent any further processing
+                return;
             }
             
             checkPowerupCollision();
@@ -3035,6 +3058,28 @@
                 audio.playCrash();
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
+                // Stop boss from continuing
+                bossActive = false;
+                bossData = null;
+                bossBullets = [];
+                playerBullets = [];
+                return; // Exit early
+            }
+            
+            // Check if lander fell off screen or crashed into ground (before landing check)
+            if (bottom > H + 50) {
+                failReason = 'hit';
+                particles.emitExplosion(lander.x, lander.y);
+                screenShake = 20;
+                audio.playCrash();
+                state = 'failure';
+                document.getElementById('touchControls').classList.remove('active');
+                // Stop boss from continuing
+                bossActive = false;
+                bossData = null;
+                bossBullets = [];
+                playerBullets = [];
+                return; // Exit early
             }
             
             // Check landing (skip if boss is active and not defeated)
