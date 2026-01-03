@@ -3222,9 +3222,19 @@
             drawObstacles();
             drawPowerups();
             // Draw boss and bullets (isolado - só aparece se bossActive e state ainda é 'playing')
-            if (state === 'playing' && bossActive && bossData) {
-                drawBoss();
-                drawBossBullets();
+            // CRITICAL: Double check state before drawing boss to prevent errors
+            if (state === 'playing' && bossActive && bossData && !bossData.defeated) {
+                try {
+                    drawBoss();
+                    drawBossBullets();
+                } catch (e) {
+                    // If error drawing boss, clean up and continue
+                    console.error('Error drawing boss:', e);
+                    bossActive = false;
+                    bossData = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                }
             }
             particles.update();
             particles.draw(ctx);
