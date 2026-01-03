@@ -2410,46 +2410,104 @@
         const level = LEVELS[currentLevel];
         drawBackground(level.planet);
         
-        // Confetti effect - mais confetti quando completa todas as fases
+        // Confetti effect - MUITO mais confetti quando completa todas as fases
         const hasNextLevel = currentLevel < LEVELS.length - 1;
-        const allLevelsCompleted = completedLevels.size === LEVELS.length; // Verifica se TODOS os 9 níveis foram completados
-        const confettiRate = allLevelsCompleted ? 0.8 : (hasNextLevel ? 0.3 : 0.5); // Mais confetti na conclusão final
-        if (Math.random() < confettiRate) {
-            particles.emitConfetti(Math.random() * W, -20);
+        const allLevelsCompleted = completedLevels.size === LEVELS.length;
+        
+        if (allLevelsCompleted) {
+            // Confete massivo para tela de campeão!
+            for (let i = 0; i < 3; i++) {
+                if (Math.random() < 0.9) {
+                    particles.emitConfetti(Math.random() * W, -20);
+                }
+            }
+            // Confete dos lados também
+            if (Math.random() < 0.5) {
+                particles.emitConfetti(-10, Math.random() * H/2);
+                particles.emitConfetti(W + 10, Math.random() * H/2);
+            }
+        } else {
+            const confettiRate = hasNextLevel ? 0.3 : 0.5;
+            if (Math.random() < confettiRate) {
+                particles.emitConfetti(Math.random() * W, -20);
+            }
         }
         particles.draw(ctx);
         
         // Tela especial de conclusão APENAS quando completa TODAS as fases na sequência
         if (!hasNextLevel && allLevelsCompleted) {
-            // Tela de conclusão especial
+            const time = Date.now() / 1000;
+            
+            // Efeito de brilho de fundo
+            const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+            gradient.addColorStop(0, `rgba(255, 215, 0, ${0.1 + Math.sin(time * 2) * 0.05})`);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, W, H);
+            
+            // Estrelas piscando
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 20; i++) {
+                const starX = (W * 0.1) + (i * 47) % (W * 0.8);
+                const starY = 50 + (i * 31) % 150;
+                const starSize = 2 + Math.sin(time * 3 + i) * 1.5;
+                if (starSize > 0) {
+                    ctx.beginPath();
+                    ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Título principal com animação pulsante
+            const pulse = 1 + Math.sin(time * 4) * 0.05;
+            ctx.save();
+            ctx.translate(W/2, 100);
+            ctx.scale(pulse, pulse);
             ctx.shadowColor = '#ffd700';
-            ctx.shadowBlur = 30;
-            ctx.font = 'bold 64px sans-serif';
+            ctx.shadowBlur = 40 + Math.sin(time * 3) * 10;
+            ctx.font = 'bold 52px sans-serif';
             ctx.fillStyle = '#ffd700';
             ctx.textAlign = 'center';
-            ctx.fillText('🎉 ' + (lang === 'hu' ? 'MINDEN SZINTET TELJESÍTETTÉL!' : 'ALL LEVELS COMPLETED!'), W/2, 120);
+            ctx.fillText('🎉 ' + (lang === 'hu' ? 'CAMPEÃO!' : 'CHAMPION!') + ' 🎉', 0, 0);
+            ctx.restore();
+            
+            // Subtítulo
+            ctx.shadowColor = '#4CAF50';
+            ctx.shadowBlur = 15;
+            ctx.font = 'bold 32px sans-serif';
+            ctx.fillStyle = '#4CAF50';
+            ctx.textAlign = 'center';
+            ctx.fillText(lang === 'hu' ? 'MINDEN SZINTET TELJESÍTETTÉL!' : 'ALL LEVELS COMPLETED!', W/2, 160);
             ctx.shadowBlur = 0;
             
-            ctx.font = 'bold 48px sans-serif';
-            ctx.fillStyle = '#4CAF50';
-            const isBossLevel = LEVELS[currentLevel] && LEVELS[currentLevel].boss;
-            ctx.fillText(isBossLevel ? t('boss_victory') : '✓ ' + t('success'), W/2, 180);
+            // Boss Defeated
+            ctx.font = 'bold 28px sans-serif';
+            ctx.fillStyle = '#ff9800';
+            ctx.fillText('🏆 ' + t('boss_victory').replace(/🏆/g, '').trim() + ' 🏆', W/2, 210);
             
-            ctx.font = 'bold 32px sans-serif';
+            // Troféu grande animado
+            const trophyBounce = Math.sin(time * 5) * 5;
+            ctx.font = '60px sans-serif';
+            ctx.fillText('🏆', W/2, 280 + trophyBounce);
+            
+            // Score com brilho
+            ctx.font = 'bold 28px sans-serif';
             ctx.fillStyle = '#ffeb3b';
-            ctx.fillText(`${t('score')}: ${score}`, W/2, 250);
+            ctx.fillText(`${t('score')}: ${score}`, W/2, 340);
             
-            ctx.font = '28px sans-serif';
+            ctx.font = '24px sans-serif';
             ctx.fillStyle = '#ffd700';
-            ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 300);
+            ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 380);
             
-            ctx.font = '22px sans-serif';
+            // Mensagem de parabéns
+            ctx.font = '20px sans-serif';
             ctx.fillStyle = '#aaa';
-            ctx.fillText(lang === 'hu' ? 'Gratulálunk! Te vagy az igazi űrhajós!' : 'Congratulations! You are a true astronaut!', W/2, 350);
+            ctx.fillText(lang === 'hu' ? '⭐ Gratulálunk! Te vagy az igazi űrhajós! ⭐' : '⭐ Congratulations! You are a true astronaut! ⭐', W/2, 430);
             
+            // Botão Menu
             ctx.font = 'bold 22px sans-serif';
             ctx.fillStyle = menuSel === 0 ? '#4CAF50' : '#888';
-            ctx.fillText('⌂ ' + t('menu'), W/2, 420);
+            ctx.fillText('⌂ ' + t('menu'), W/2, 490);
         } else {
             // Tela de sucesso normal para níveis intermediários
             const isBossLevel = LEVELS[currentLevel] && LEVELS[currentLevel].boss;
