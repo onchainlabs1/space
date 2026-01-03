@@ -85,19 +85,17 @@
             background: rgba(255, 152, 0, 0.6);
         }
         .touch-btn.shoot {
-            position: absolute;
-            right: 20px;
-            bottom: 130px;
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             background: rgba(156, 39, 176, 0.3);
             border-color: rgba(156, 39, 176, 0.6);
             color: #9c27b0;
+            font-size: 20px;
         }
         .touch-btn.shoot:active, .touch-btn.shoot.pressed {
             background: rgba(156, 39, 176, 0.6);
         }
-        .side-btns { display: flex; gap: 15px; }
+        .side-btns { display: flex; gap: 10px; align-items: center; }
         .controls-hint {
             position: fixed;
             bottom: 10px;
@@ -270,11 +268,11 @@
     <div class="touch-controls" id="touchControls">
         <div class="side-btns">
             <button class="touch-btn" id="btnLeft">←</button>
+            <button class="touch-btn shoot" id="btnShoot" style="display: none;">💥</button>
             <button class="touch-btn" id="btnRight">→</button>
-            </div>
-        <button class="touch-btn thrust" id="btnThrust">🔥</button>
-        <button class="touch-btn shoot" id="btnShoot" style="display: none;">💥</button>
         </div>
+        <button class="touch-btn thrust" id="btnThrust">🔥</button>
+    </div>
         
     <!-- Controles de Menu - Direcional Elegante para Mobile -->
     <div class="menu-controls" id="menuControls">
