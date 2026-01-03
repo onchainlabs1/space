@@ -646,6 +646,7 @@
     let playerBullets = [];
     let bossDefeated = false;
     let lastPlayerShot = 0;
+    let playerLives = 2; // 2 vidas (corações)
     const PLAYER_SHOOT_COOLDOWN = 500; // 0.5 segundos
     
     // Level configurations
@@ -1138,8 +1139,9 @@
         playerBullets = [];
         bossDefeated = false;
         lastPlayerShot = 0;
-        // No boss level, pad is centered (for after boss is defeated, if needed)
-        padX = W / 2 - PAD_W / 2;
+        playerLives = 2; // Reset lives to 2
+        // Boss level doesn't use landing pad
+        padX = -1000; // Hide pad off-screen
     }
     
     function updateBoss() {
@@ -1231,13 +1233,13 @@
             bullet.y += bullet.vy;
             
             // Check collision with lander (only if not in spawn protection)
-            if (lander.spawnProtection <= 0) {
+            if (lander.spawnProtection <= 0 && lander.shieldCooldown <= 0) {
                 const dist = Math.sqrt((bullet.x - lander.x) ** 2 + (bullet.y - lander.y) ** 2);
                 if (dist < bullet.radius + LANDER_W/2) {
                     if (lander.shield) {
                         // Shield absorbs hit
                         lander.shield = false;
-                        lander.shieldCooldown = 30;
+                        lander.shieldCooldown = 60;
                         particles.emit(lander.x, lander.y, 10, {
                             angle: 0, spread: Math.PI * 2, speed: 3, life: 20, size: 5,
                             colors: ['#4a9eff', '#ffffff']
@@ -1246,18 +1248,34 @@
                         bossBullets.splice(i, 1);
                         continue;
                     } else {
-                        // Player hit - set failure
-                        failReason = 'hit';
-                        particles.emitExplosion(lander.x, lander.y);
-                        screenShake = 20;
+                        // Player hit - lose a life
+                        playerLives--;
+                        bossBullets.splice(i, 1);
+                        screenShake = 15;
+                        flashAlpha = 0.4;
+                        flashColor = '#ff0000';
+                        lander.shieldCooldown = 90; // 1.5 seconds invulnerability
                         audio.playCrash();
-                        state = 'failure';
-                        document.getElementById('touchControls').classList.remove('active');
-                        // Clean up boss
-                        bossData = null;
-                        bossBullets = [];
-                        playerBullets = [];
-                        return; // Exit this function only
+                        
+                        particles.emit(lander.x, lander.y, 8, {
+                            angle: 0, spread: Math.PI * 2, speed: 2, life: 15, size: 4,
+                            colors: ['#ff5252', '#ff8a80']
+                        });
+                        
+                        if (playerLives <= 0) {
+                            // No more lives - game over
+                            failReason = 'hit';
+                            particles.emitExplosion(lander.x, lander.y);
+                            screenShake = 20;
+                            state = 'failure';
+                            document.getElementById('touchControls').classList.remove('active');
+                            // Clean up boss
+                            bossData = null;
+                            bossBullets = [];
+                            playerBullets = [];
+                            return;
+                        }
+                        continue;
                     }
                 }
             }
@@ -1377,11 +1395,26 @@
         ctx.shadowBlur = 0;
         ctx.textAlign = 'left';
         
+        // Draw player lives (hearts)
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'right';
+        let heartsStr = '';
+        for (let i = 0; i < 2; i++) {
+            heartsStr += i < playerLives ? '❤️' : '🖤';
+        }
+        ctx.fillText(heartsStr, W - 20, 60);
+        
+        // Invulnerability indicator (flashing)
+        if (lander.shieldCooldown > 0 && Math.floor(Date.now() / 100) % 2 === 0) {
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#ffeb3b';
+            ctx.fillText('⚡ INVULNERABLE', W - 20, 80);
+        }
+        
         // Draw shoot hint
         ctx.font = '12px sans-serif';
         ctx.fillStyle = '#888';
-        ctx.textAlign = 'right';
-        ctx.fillText('X/Shift = Shoot', W - 20, 60);
+        ctx.fillText('X/Shift = Shoot', W - 20, 100);
         ctx.textAlign = 'left';
     }
     
@@ -1603,6 +1636,10 @@
     }
     
     function drawPad() {
+        // Don't draw pad for boss level
+        const level = LEVELS[currentLevel];
+        if (level && level.boss) return;
+        
         // Target arrow
         const time = Date.now() / 200;
         const bobY = Math.sin(time) * 5;
@@ -2024,15 +2061,17 @@
         ctx.font = '11px sans-serif';
         ctx.fillText(`${t('fuel')}: ${Math.floor(lander.fuel)}`, 25, 108);
         
-        // Direction indicator
-        const dirToPad = padX + PAD_W/2 - lander.x;
-        ctx.font = '13px sans-serif';
-        if (Math.abs(dirToPad) > PAD_W) {
-            ctx.fillStyle = '#ffeb3b';
-            ctx.fillText(dirToPad > 0 ? 'Target →' : '← Target', 20, 140);
-        } else {
-            ctx.fillStyle = '#4CAF50';
-            ctx.fillText('✓ Aligned', 20, 140);
+        // Direction indicator (not for boss level)
+        if (!level.boss) {
+            const dirToPad = padX + PAD_W/2 - lander.x;
+            ctx.font = '13px sans-serif';
+            if (Math.abs(dirToPad) > PAD_W) {
+                ctx.fillStyle = '#ffeb3b';
+                ctx.fillText(dirToPad > 0 ? 'Target →' : '← Target', 20, 140);
+            } else {
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillText('✓ Aligned', 20, 140);
+            }
         }
         
         // Power-up indicators
@@ -2073,9 +2112,11 @@
         const radarX = W - 85;
         const radarY = 15;
         
-        // Pad on radar
-        ctx.fillStyle = '#4CAF50';
-        ctx.fillRect(radarX + (padX + PAD_W/2) * radarScale - 3, radarY + 60, 6, 3);
+        // Pad on radar (not for boss level)
+        if (!level.boss) {
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(radarX + (padX + PAD_W/2) * radarScale - 3, radarY + 60, 6, 3);
+        }
         
         // Lander on radar
         ctx.fillStyle = '#fff';
