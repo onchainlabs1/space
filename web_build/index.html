@@ -1158,13 +1158,13 @@
             obstacles.push({
                 x: x + (Math.random() - 0.5) * 40,
                 y: y + (Math.random() - 0.5) * 40,
-                radius: isAlien ? 18 : 15 + Math.random() * 8,
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: (Math.random() - 0.5) * 1,
+                radius: isAlien ? 16 : 12 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.6,  // Bem mais lento
+                vy: (Math.random() - 0.5) * 0.4,  // Bem mais lento
                 type: isAlien ? 'alien' : 'asteroid',
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.1,
-                chaseSpeed: isAlien ? 0.25 : 0
+                rotationSpeed: (Math.random() - 0.5) * 0.05,
+                chaseSpeed: isAlien ? 0.1 : 0  // Aliens perseguem mais devagar
             });
         }
     }
@@ -1181,16 +1181,16 @@
             obs.y += obs.vy;
             obs.rotation += obs.rotationSpeed;
             
-            // Aliens perseguem o jogador
+            // Aliens perseguem o jogador (devagar)
             if (obs.type === 'alien' && obs.chaseSpeed > 0) {
                 const dx = lander.x - obs.x;
                 const dy = lander.y - obs.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 0 && dist < 300) {
-                    obs.vx += (dx / dist) * obs.chaseSpeed * 0.1;
-                    obs.vy += (dy / dist) * obs.chaseSpeed * 0.1;
-                    // Limita velocidade
-                    const maxSpeed = 2;
+                if (dist > 0 && dist < 250) {
+                    obs.vx += (dx / dist) * obs.chaseSpeed * 0.05;
+                    obs.vy += (dy / dist) * obs.chaseSpeed * 0.05;
+                    // Limita velocidade (bem lento)
+                    const maxSpeed = 0.8;
                     const speed = Math.sqrt(obs.vx*obs.vx + obs.vy*obs.vy);
                     if (speed > maxSpeed) {
                         obs.vx = (obs.vx / speed) * maxSpeed;
