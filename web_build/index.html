@@ -3061,17 +3061,35 @@
             
             // CRITICAL: Direct ground collision check (before other checks)
             const bottom = lander.y + LANDER_H/2;
-            // If lander is below the pad level and not on the pad, it's a crash
-            if (bottom > PAD_Y + 10) {
-                // Check if it's actually on the pad (only if boss is defeated or no boss)
-                const onPad = !bossActive || (bossData && bossData.defeated);
+            // If lander is below the pad level, check if it's a crash
+            if (bottom > PAD_Y + 5) {
+                // If boss is active and not defeated, any ground contact is a crash
+                if (bossActive && bossData && !bossData.defeated) {
+                    failReason = 'hit';
+                    particles.emitExplosion(lander.x, lander.y);
+                    screenShake = 20;
+                    flashAlpha = 0.5;
+                    flashColor = '#ff0000';
+                    audio.playCrash();
+                    state = 'failure';
+                    document.getElementById('touchControls').classList.remove('active');
+                    // Stop boss from continuing
+                    bossActive = false;
+                    bossData = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                    // Exit early to prevent any further processing
+                    return;
+                }
+                
+                // If no boss or boss defeated, check if on pad
                 const padLeft = padX;
                 const padRight = padX + PAD_W;
                 const landerLeft = lander.x - LANDER_W/2;
                 const landerRight = lander.x + LANDER_W/2;
                 
-                // If not on pad, or pad doesn't exist yet (boss not defeated), it's a crash
-                if (!onPad || landerRight < padLeft || landerLeft > padRight) {
+                // If not on pad, it's a crash
+                if (landerRight < padLeft || landerLeft > padRight) {
                     failReason = 'hit';
                     particles.emitExplosion(lander.x, lander.y);
                     screenShake = 20;
