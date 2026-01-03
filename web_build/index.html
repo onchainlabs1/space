@@ -102,8 +102,150 @@
             border-radius: 3px;
             color: #4CAF50;
         }
+        /* Controles de Menu - Direcional Elegante (Apenas no Mobile) */
+        .menu-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none; /* Escondido por padrão (desktop) */
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+            align-items: flex-end;
+        }
+        
+        /* Direcional (D-Pad) */
+        .dpad-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dpad {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 2px;
+            width: 90px;
+            height: 90px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .dpad-btn {
+            background: rgba(76, 175, 80, 0.5);
+            border: 2px solid rgba(76, 175, 80, 0.9);
+            color: #4CAF50;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .dpad-btn:active {
+            background: rgba(76, 175, 80, 0.9);
+            transform: scale(0.9);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .dpad-btn.up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .dpad-btn.down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        .dpad-btn.left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .dpad-btn.right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .dpad-middle {
+            grid-column: 1 / 4;
+            grid-row: 1 / 4;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            pointer-events: none;
+        }
+        .dpad-center {
+            grid-column: 2;
+            grid-row: 2;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        
+        /* Botões de Ação */
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: 2px solid;
+        }
+        .action-btn:active {
+            transform: scale(0.9);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .action-btn.select {
+            background: rgba(255, 193, 7, 0.5);
+            border-color: rgba(255, 193, 7, 0.9);
+            color: #ffc107;
+        }
+        .action-btn.select:active {
+            background: rgba(255, 193, 7, 0.9);
+        }
+        .action-btn.back {
+            background: rgba(244, 67, 54, 0.5);
+            border-color: rgba(244, 67, 54, 0.9);
+            color: #f44336;
+        }
+        .action-btn.back:active {
+            background: rgba(244, 67, 54, 0.9);
+        }
+        .menu-controls.hidden {
+            display: none;
+        }
         @media (max-width: 768px) {
             .controls-hint { display: none; }
+            .menu-controls {
+                display: flex; /* Mostra apenas no mobile */
+                bottom: 15px;
+                right: 15px;
+            }
+            .dpad {
+                width: 80px;
+                height: 80px;
+            }
+            .dpad-btn {
+                font-size: 18px;
+            }
+            .action-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -120,6 +262,25 @@
         <button class="touch-btn thrust" id="btnThrust">🔥</button>
         </div>
         
+    <!-- Controles de Menu - Direcional Elegante para Mobile -->
+    <div class="menu-controls" id="menuControls">
+        <div class="dpad-container">
+            <div class="dpad">
+                <button class="dpad-btn up" id="btnMenuUp">↑</button>
+                <div class="dpad-middle">
+                    <button class="dpad-btn left" id="btnMenuLeft">←</button>
+                    <div class="dpad-center"></div>
+                    <button class="dpad-btn right" id="btnMenuRight">→</button>
+                </div>
+                <button class="dpad-btn down" id="btnMenuDown">↓</button>
+            </div>
+        </div>
+        <div class="action-btns">
+            <button class="action-btn select" id="btnMenuSelect">✓</button>
+            <button class="action-btn back" id="btnMenuBack">✕</button>
+        </div>
+    </div>
+    
     <div class="controls-hint">
         <code>SPACE</code>/<code>↑</code> Thrust | <code>←</code><code>→</code> Move | <code>M</code> Mute | <code>L</code> Lang
     </div>
@@ -161,6 +322,8 @@
             this.musicGain = null;
             this.sfxGain = null;
             this.initialized = false;
+            this.musicOscillators = [];
+            this.currentMusic = null;
         }
         
         init() {
@@ -183,6 +346,8 @@
             this.muted = !this.muted;
             if (this.musicGain) this.musicGain.gain.value = this.muted ? 0 : 0.3;
             if (this.sfxGain) this.sfxGain.gain.value = this.muted ? 0 : 0.5;
+            
+            // Música removida
         }
         
         // Generate simple synth sounds
@@ -232,6 +397,15 @@
         playLanding() {
             this.playTone(200, 0.3, 'sine', 0.2);
         }
+        
+        stopMusic() {
+            this.musicOscillators.forEach(osc => {
+                try { osc.stop(); } catch(e) {}
+            });
+            this.musicOscillators = [];
+            this.currentMusic = null;
+        }
+        
     }
     
     const audio = new AudioSystem();
@@ -431,6 +605,7 @@
     let transition = { active: false, alpha: 0, target: '', callback: null };
     let tutorialStep = 0;
     let showTutorial = true;
+    let completedLevels = new Set(); // Rastreia quais níveis foram completados nesta sessão
     let mascotMessage = '';
     let mascotTimer = 0;
     let isMobile = false;
@@ -441,7 +616,7 @@
     const MAX_TRAIL = 30;
     
     // Lander
-    let lander = { x: W/2, y: 80, vx: 0, vy: 0, fuel: 100, thrust: false, shield: false, shieldTimer: 0, slowmo: false, slowmoTimer: 0 };
+    let lander = { x: W/2, y: 80, vx: 0, vy: 0, fuel: 100, thrust: false, shield: false, shieldTimer: 0, slowmo: false, slowmoTimer: 0, shieldCooldown: 0 };
     
     // Landing pad
     let padX = W/2 - 60;
@@ -455,18 +630,18 @@
     
     // Level configurations
     const LEVELS = [
-        // Moon levels (1-3) - MUITO FÁCIL para crianças
-        { planet: 'moon', gravity: 0.025, fuel: 250, safeSpeed: 250, obstacles: 0, wind: 0, name: 'Moon 1' }, // EXTREMAMENTE fácil - quase qualquer velocidade funciona!
-        { planet: 'moon', gravity: 0.035, fuel: 220, safeSpeed: 180, obstacles: 1, wind: 0, name: 'Moon 2' }, // MUITO fácil
-        { planet: 'moon', gravity: 0.045, fuel: 200, safeSpeed: 150, obstacles: 2, wind: 0.0005, name: 'Moon 3' }, // Fácil
-        // Mars levels (4-6) - FÁCIL
-        { planet: 'mars', gravity: 0.07, fuel: 200, safeSpeed: 130, obstacles: 1, wind: 0.001, name: 'Mars 1' }, // Fácil
-        { planet: 'mars', gravity: 0.10, fuel: 160, safeSpeed: 60, obstacles: 3, wind: 0.002, name: 'Mars 2' },
-        { planet: 'mars', gravity: 0.12, fuel: 140, safeSpeed: 55, obstacles: 4, wind: 0.003, name: 'Mars 3' },
+        // Moon levels (1-3) - Progressão gradual de elementos
+        { planet: 'moon', gravity: 0.025, fuel: 250, safeSpeed: 250, obstacles: 2, wind: 0, name: 'Moon 1' }, // Começa com 2 obstáculos (apenas asteroides)
+        { planet: 'moon', gravity: 0.035, fuel: 220, safeSpeed: 180, obstacles: 3, wind: 0, name: 'Moon 2' }, // 3 obstáculos (maioria asteroides, poucos aliens)
+        { planet: 'moon', gravity: 0.045, fuel: 200, safeSpeed: 150, obstacles: 4, wind: 0.0005, name: 'Moon 3' }, // 4 obstáculos (mistura de asteroides e aliens)
+        // Mars levels (4-6) - Progressão aumentando
+        { planet: 'mars', gravity: 0.07, fuel: 200, safeSpeed: 130, obstacles: 3, wind: 0.001, name: 'Mars 1' }, // 3 obstáculos (alguns aliens)
+        { planet: 'mars', gravity: 0.10, fuel: 160, safeSpeed: 100, obstacles: 5, wind: 0.002, name: 'Mars 2' }, // 5 obstáculos (mais aliens)
+        { planet: 'mars', gravity: 0.12, fuel: 140, safeSpeed: 90, obstacles: 6, wind: 0.003, name: 'Mars 3' }, // 6 obstáculos (muitos aliens)
         // Earth levels (7-9) - MÉDIO/DIFÍCIL
         { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 100, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
-        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 50, obstacles: 4, wind: 0.004, name: 'Earth 2' },
-        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 40, obstacles: 5, wind: 0.005, name: 'Earth 3' },
+        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 80, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
+        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 70, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
     ];
     
     const PLANET_COLORS = {
@@ -578,6 +753,56 @@
         btnThrust.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', false); });
     }
     
+    // Setup Menu Controls
+    function setupMenuControls() {
+        const btnMenuUp = document.getElementById('btnMenuUp');
+        const btnMenuDown = document.getElementById('btnMenuDown');
+        const btnMenuLeft = document.getElementById('btnMenuLeft');
+        const btnMenuRight = document.getElementById('btnMenuRight');
+        const btnMenuSelect = document.getElementById('btnMenuSelect');
+        const btnMenuBack = document.getElementById('btnMenuBack');
+        const menuControls = document.getElementById('menuControls');
+        
+        const handleMenuButton = (code) => {
+            audio.init();
+            // Garante que prevKeys não tem essa tecla para que justPressed funcione
+            if (prevKeys[code]) {
+                prevKeys[code] = false;
+            }
+            // Simula pressionar a tecla - será processado no próximo frame
+            keys[code] = true;
+            justPressed[code] = true; // Marca como justPressed para funcionar imediatamente
+            // Reseta após processamento
+            setTimeout(() => {
+                keys[code] = false;
+                justPressed[code] = false;
+            }, 100);
+        };
+        
+        btnMenuUp.addEventListener('click', () => handleMenuButton('ArrowUp'));
+        btnMenuDown.addEventListener('click', () => handleMenuButton('ArrowDown'));
+        btnMenuLeft.addEventListener('click', () => handleMenuButton('ArrowLeft'));
+        btnMenuRight.addEventListener('click', () => handleMenuButton('ArrowRight'));
+        btnMenuSelect.addEventListener('click', () => handleMenuButton('Enter'));
+        btnMenuBack.addEventListener('click', () => handleMenuButton('Escape'));
+        
+        // Mostra/esconde controles baseado no estado (apenas no mobile, CSS cuida do desktop)
+        const updateMenuControls = () => {
+            const showInStates = ['menu', 'levelSelect', 'explore', 'success', 'failure', 'info', 'tutorialMode'];
+            // Só atualiza se for mobile (no desktop o CSS já esconde)
+            if (isMobile) {
+                if (showInStates.includes(state)) {
+                    menuControls.classList.remove('hidden');
+                } else {
+                    menuControls.classList.add('hidden');
+                }
+            }
+        };
+        
+        // Atualiza a cada frame
+        setInterval(updateMenuControls, 100);
+    }
+    
     // Detect mobile
     function detectMobile() {
         isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -621,7 +846,7 @@
                     clickY >= y - 35 && clickY <= y + 45) {
                     levelSel = i;
                     audio.playClick();
-                    if (levelSel < 9) startTransition('playing', () => startLevel(levelSel));
+                    if (levelSel < LEVELS.length) startTransition('playing', () => startLevel(levelSel));
                     break;
                 }
             }
@@ -691,7 +916,8 @@
                         menuSel = (menuSel + 1) % 5;
                         audio.playClick();
                     } else if (state === 'levelSelect') {
-                        levelSel = Math.min(9, levelSel + 3);
+                        const maxLevel = LEVELS.length - 1;
+                        levelSel = Math.min(maxLevel, levelSel + 3);
                         audio.playClick();
                     } else if (state === 'explore' && exploreCardSelected === -1) {
                         menuSel = menuSel < 2 ? menuSel + 2 : menuSel - 2;
@@ -710,7 +936,7 @@
                     else state = 'info';
                 } else if (state === 'levelSelect') {
                     audio.playClick();
-                    if (levelSel < 9) startTransition('playing', () => startLevel(levelSel));
+                    if (levelSel < LEVELS.length) startTransition('playing', () => startLevel(levelSel));
                     else state = 'menu';
                 } else if (state === 'explore' && exploreCardSelected === -1) {
                     audio.playClick();
@@ -755,13 +981,47 @@
             ));
             
             if (attempts < 50) {
+                // Progressão gradual de alienígenas por nível
+                // Moon 1 (0): 0%, Moon 2 (1): 10%, Moon 3 (2): 20%
+                // Mars 1 (3): 25%, Mars 2 (4): 30%, Mars 3 (5): 35%
+                // Earth 1 (6): 30%, Earth 2 (7): 35%, Earth 3 (8): 40%
+                const alienChance = [
+                    0.0,  // Moon 1 - apenas asteroides
+                    0.1,  // Moon 2 - 10% aliens
+                    0.2,  // Moon 3 - 20% aliens
+                    0.25, // Mars 1 - 25% aliens
+                    0.3,  // Mars 2 - 30% aliens
+                    0.35, // Mars 3 - 35% aliens
+                    0.3,  // Earth 1 - 30% aliens
+                    0.35, // Earth 2 - 35% aliens
+                    0.4   // Earth 3 - 40% aliens
+                ];
+                // Velocidade de perseguição também aumenta gradualmente
+                const chaseSpeeds = [
+                    0.0,   // Moon 1 - sem perseguição
+                    0.005, // Moon 2 - perseguição muito suave
+                    0.008, // Moon 3 - perseguição suave
+                    0.010, // Mars 1 - perseguição moderada
+                    0.012, // Mars 2 - perseguição moderada-alta
+                    0.015, // Mars 3 - perseguição normal
+                    0.015, // Earth 1 - perseguição normal
+                    0.018, // Earth 2 - perseguição mais agressiva
+                    0.020  // Earth 3 - perseguição mais agressiva
+                ];
+                
+                const alienProbability = alienChance[currentLevel] || 0;
+                const isAlien = Math.random() < alienProbability;
+                const chaseSpeed = isAlien ? (chaseSpeeds[currentLevel] || 0.015) : 0;
+                
                 obstacles.push({
                     x, y,
-                    radius: 20 + Math.random() * 20,
+                    radius: isAlien ? (12 + Math.random() * 12) : (20 + Math.random() * 20), // Alienígenas menores: 12-24, Asteroides: 20-40
                     vx: (Math.random() - 0.5) * 0.5,
                     vy: (Math.random() - 0.5) * 0.3,
                     rotation: Math.random() * Math.PI * 2,
-                    rotSpeed: (Math.random() - 0.5) * 0.02
+                    rotSpeed: (Math.random() - 0.5) * 0.02,
+                    type: isAlien ? 'alien' : 'asteroid',
+                    chaseSpeed: chaseSpeed
                 });
             }
         }
@@ -801,7 +1061,7 @@
             x: startX, y: 60, vx: 0, vy: 0, 
             fuel: level.fuel, 
             thrust: false, 
-            shield: false, shieldTimer: 0,
+            shield: false, shieldTimer: 0, shieldCooldown: 0,
             slowmo: false, slowmoTimer: 0,
             spawnProtection: 60 // 1 second of spawn protection
         };
@@ -828,6 +1088,12 @@
             return null;
         }
         
+        // Skip collisions during shield cooldown (brief invulnerability after shield is consumed)
+        if (lander.shieldCooldown > 0) {
+            lander.shieldCooldown--;
+            return null;
+        }
+        
         const level = LEVELS[currentLevel];
         
         // Check obstacle collisions
@@ -838,15 +1104,20 @@
             if (dist < obs.radius + LANDER_W/2) {
                 if (lander.shield) {
                     lander.shield = false;
-                    // Bounce off
+                    lander.shieldCooldown = 30; // 30 frames de invulnerabilidade após escudo ser consumido
+                    // Empurra a nave para fora do obstáculo de forma mais agressiva
                     const angle = Math.atan2(dy, dx);
-                    lander.vx = Math.cos(angle) * 0.3;
-                    lander.vy = Math.sin(angle) * 0.3;
-                    particles.emit(lander.x, lander.y, 10, {
-                        angle: angle, spread: 1, speed: 3, life: 20, size: 5,
+                    const pushDistance = obs.radius + LANDER_W/2 - dist + 10; // Empurra 10px além do obstáculo
+                    lander.x += Math.cos(angle) * pushDistance;
+                    lander.y += Math.sin(angle) * pushDistance;
+                    lander.vx = Math.cos(angle) * 0.5; // Bounce mais forte
+                    lander.vy = Math.sin(angle) * 0.5;
+                    particles.emit(lander.x, lander.y, 15, {
+                        angle: angle, spread: 1, speed: 4, life: 25, size: 6,
                         colors: ['#4a9eff', '#ffffff']
                     });
                     audio.playPowerup();
+                    return null; // Protegido, não retorna 'hit'
                 } else {
                     return 'hit';
                 }
@@ -857,7 +1128,22 @@
         for (let t of terrain) {
             if (lander.x > t.x && lander.x < t.x + t.width && 
                 lander.y + LANDER_H/2 > t.y - t.height) {
-                return 'hit';
+                if (lander.shield) {
+                    lander.shield = false;
+                    lander.shieldCooldown = 30; // 30 frames de invulnerabilidade após escudo ser consumido
+                    // Empurra a nave para fora do terreno de forma mais agressiva
+                    lander.y = t.y - t.height - LANDER_H/2 - 5; // Empurra 5px acima do terreno
+                    lander.vy = -0.8; // Bounce mais forte
+                    lander.vx += (Math.random() - 0.5) * 0.3;
+                    particles.emit(lander.x, lander.y, 15, {
+                        angle: Math.PI / 2, spread: 0.5, speed: 4, life: 25, size: 6,
+                        colors: ['#4a9eff', '#ffffff']
+                    });
+                    audio.playPowerup();
+                    return null; // Protegido, não retorna 'hit'
+                } else {
+                    return 'hit';
+                }
             }
         }
         
@@ -1044,6 +1330,25 @@
     
     function drawObstacles() {
         obstacles.forEach(obs => {
+            // Alien chase behavior - move towards lander when close
+            if (obs.type === 'alien' && obs.chaseSpeed > 0) {
+                const dx = lander.x - obs.x;
+                const dy = lander.y - obs.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 0 && dist < 300) {
+                    // Suave perseguição - adiciona velocidade em direção à nave
+                    obs.vx += (dx / dist) * obs.chaseSpeed;
+                    obs.vy += (dy / dist) * obs.chaseSpeed;
+                    // Limita velocidade máxima
+                    const maxSpeed = 1.0;
+                    const speed = Math.sqrt(obs.vx*obs.vx + obs.vy*obs.vy);
+                    if (speed > maxSpeed) {
+                        obs.vx = (obs.vx / speed) * maxSpeed;
+                        obs.vy = (obs.vy / speed) * maxSpeed;
+                    }
+                }
+            }
+            
             obs.x += obs.vx;
             obs.y += obs.vy;
             obs.rotation += obs.rotSpeed;
@@ -1056,26 +1361,94 @@
             ctx.translate(obs.x, obs.y);
             ctx.rotate(obs.rotation);
             
-            // Asteroid body
-            ctx.fillStyle = '#666';
-            ctx.beginPath();
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                const r = obs.radius * (0.8 + Math.sin(i * 3) * 0.2);
-                if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
-                else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            // Alien ou Asteroid - desenhos completamente diferentes
+            if (obs.type === 'alien') {
+                // NAVE ALIENÍGENA - Design equilibrado e harmonioso
+                // Corpo principal - formato triangular similar à nave do jogador, mas invertido
+                ctx.fillStyle = '#8b5cf6'; // Roxo suave
+                ctx.beginPath();
+                ctx.moveTo(0, obs.radius * 0.7); // Parte inferior
+                ctx.lineTo(-obs.radius * 0.7, -obs.radius * 0.5); // Esquerda
+                ctx.lineTo(0, -obs.radius * 0.8); // Topo
+                ctx.lineTo(obs.radius * 0.7, -obs.radius * 0.5); // Direita
+                ctx.closePath();
+                ctx.fill();
+                
+                // Borda sutil
+                ctx.strokeStyle = '#6d28d9';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // Cúpula/cockpit central - similar à nave do jogador
+                ctx.fillStyle = '#a78bfa';
+                ctx.beginPath();
+                ctx.arc(0, -obs.radius * 0.3, obs.radius * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Brilho na cúpula
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.arc(-obs.radius * 0.08, -obs.radius * 0.35, obs.radius * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Asas laterais menores e mais discretas
+                ctx.fillStyle = '#7c3aed';
+                ctx.beginPath();
+                // Asa esquerda
+                ctx.moveTo(-obs.radius * 0.4, -obs.radius * 0.2);
+                ctx.lineTo(-obs.radius * 0.9, obs.radius * 0.3);
+                ctx.lineTo(-obs.radius * 0.5, obs.radius * 0.4);
+                ctx.closePath();
+                ctx.fill();
+                // Asa direita
+                ctx.beginPath();
+                ctx.moveTo(obs.radius * 0.4, -obs.radius * 0.2);
+                ctx.lineTo(obs.radius * 0.9, obs.radius * 0.3);
+                ctx.lineTo(obs.radius * 0.5, obs.radius * 0.4);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Propulsores sutis na parte traseira
+                ctx.fillStyle = '#c084fc';
+                ctx.beginPath();
+                ctx.arc(-obs.radius * 0.3, obs.radius * 0.5, obs.radius * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(obs.radius * 0.3, obs.radius * 0.5, obs.radius * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Olhos/iluminação frontal - mais sutis
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(-obs.radius * 0.2, -obs.radius * 0.5, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(obs.radius * 0.2, -obs.radius * 0.5, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Asteroid - cor cinza (mantém o formato original)
+                ctx.fillStyle = '#666';
+                ctx.shadowBlur = 0;
+                
+                ctx.beginPath();
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const r = obs.radius * (0.8 + Math.sin(i * 3) * 0.2);
+                    if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                    else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Craters do asteroide
+                ctx.fillStyle = '#444';
+                ctx.beginPath();
+                ctx.arc(obs.radius * 0.3, -obs.radius * 0.2, obs.radius * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(-obs.radius * 0.2, obs.radius * 0.3, obs.radius * 0.15, 0, Math.PI * 2);
+                ctx.fill();
             }
-            ctx.closePath();
-            ctx.fill();
-            
-            // Craters
-            ctx.fillStyle = '#444';
-            ctx.beginPath();
-            ctx.arc(obs.radius * 0.3, -obs.radius * 0.2, obs.radius * 0.2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(-obs.radius * 0.2, obs.radius * 0.3, obs.radius * 0.15, 0, Math.PI * 2);
-            ctx.fill();
             
             ctx.restore();
         });
@@ -1159,12 +1532,29 @@
             ctx.stroke();
         }
         
-        // Slowmo effect
+        // Slowmo effect - mais visível e forte
         if (lander.slowmo) {
-            ctx.fillStyle = `rgba(156, 39, 176, ${0.2 + Math.sin(Date.now()/150) * 0.1})`;
+            // Círculo externo pulsante maior
+            ctx.fillStyle = `rgba(156, 39, 176, ${0.35 + Math.sin(Date.now()/100) * 0.15})`;
             ctx.beginPath();
-            ctx.arc(x, y, LANDER_W * 1.5, 0, Math.PI * 2);
+            ctx.arc(x, y, LANDER_W * 2.5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Círculo interno mais brilhante
+            ctx.fillStyle = `rgba(200, 100, 255, ${0.4 + Math.sin(Date.now()/80) * 0.2})`;
+            ctx.beginPath();
+            ctx.arc(x, y, LANDER_W * 1.8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Brilho adicional
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#9c27b0';
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.6 + Math.sin(Date.now()/120) * 0.3})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x, y, LANDER_W * 2, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
         }
         
         // Main body
@@ -1333,9 +1723,19 @@
             iconX -= 25;
         }
         if (lander.slowmo) {
-            ctx.fillStyle = '#9C27B0';
-            ctx.font = '18px sans-serif';
+            // Ícone do slowmo com brilho pulsante
+            const pulse = 0.8 + Math.sin(Date.now()/100) * 0.2;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#9C27B0';
+            ctx.fillStyle = `rgba(156, 39, 176, ${pulse})`;
+            ctx.font = 'bold 22px sans-serif';
             ctx.fillText('⏱', iconX, 140);
+            ctx.shadowBlur = 0;
+            
+            // Texto explicativo abaixo do ícone
+            ctx.fillStyle = '#9C27B0';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('SLOW', iconX - 8, 155);
         }
         
         // Mini radar (top right)
@@ -1566,8 +1966,8 @@
         ctx.textAlign = 'center';
         ctx.fillText(t('levels'), W/2, 70);
         
-        // 3x3 grid
-        for (let i = 0; i < 9; i++) {
+        // Grid de níveis (3 colunas, linhas conforme necessário)
+        for (let i = 0; i < LEVELS.length; i++) {
             const col = i % 3;
             const row = Math.floor(i / 3);
             const x = 200 + col * 200;
@@ -1612,7 +2012,7 @@
         
         // Back button
         ctx.font = '24px sans-serif';
-        ctx.fillStyle = levelSel === 9 ? '#4CAF50' : '#888';
+        ctx.fillStyle = levelSel === LEVELS.length - 1 ? '#4CAF50' : '#888';
         ctx.fillText(t('back'), W/2, H - 40);
         
         // Mobile navigation hint
@@ -1630,38 +2030,69 @@
         const level = LEVELS[currentLevel];
         drawBackground(level.planet);
         
-        // Confetti effect
-        if (Math.random() < 0.3) {
+        // Confetti effect - mais confetti quando completa todas as fases
+        const hasNextLevel = currentLevel < LEVELS.length - 1;
+        const allLevelsCompleted = completedLevels.size === LEVELS.length; // Verifica se TODOS os 9 níveis foram completados
+        const confettiRate = allLevelsCompleted ? 0.8 : (hasNextLevel ? 0.3 : 0.5); // Mais confetti na conclusão final
+        if (Math.random() < confettiRate) {
             particles.emitConfetti(Math.random() * W, -20);
         }
         particles.draw(ctx);
         
-        ctx.shadowColor = '#4CAF50';
-        ctx.shadowBlur = 20;
-        ctx.font = 'bold 52px sans-serif';
-        ctx.fillStyle = '#4CAF50';
-        ctx.textAlign = 'center';
-        ctx.fillText('✓ ' + t('success'), W/2, 150);
-        ctx.shadowBlur = 0;
-        
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillStyle = '#ffeb3b';
-        ctx.fillText(`${t('score')}: ${score}`, W/2, 230);
-        
-        ctx.font = '24px sans-serif';
-        ctx.fillStyle = '#888';
-        ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 280);
-        
-        // Buttons
-        const hasNextLevel = currentLevel < LEVELS.length - 1;
-        
-        ctx.font = 'bold 22px sans-serif';
-        if (hasNextLevel) {
+        // Tela especial de conclusão APENAS quando completa TODAS as fases na sequência
+        if (!hasNextLevel && allLevelsCompleted) {
+            // Tela de conclusão especial
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 30;
+            ctx.font = 'bold 64px sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎉 ' + (lang === 'hu' ? 'MINDEN SZINTET TELJESÍTETTÉL!' : 'ALL LEVELS COMPLETED!'), W/2, 120);
+            ctx.shadowBlur = 0;
+            
+            ctx.font = 'bold 48px sans-serif';
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillText('✓ ' + t('success'), W/2, 180);
+            
+            ctx.font = 'bold 32px sans-serif';
+            ctx.fillStyle = '#ffeb3b';
+            ctx.fillText(`${t('score')}: ${score}`, W/2, 250);
+            
+            ctx.font = '28px sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 300);
+            
+            ctx.font = '22px sans-serif';
+            ctx.fillStyle = '#aaa';
+            ctx.fillText(lang === 'hu' ? 'Gratulálunk! Te vagy az igazi űrhajós!' : 'Congratulations! You are a true astronaut!', W/2, 350);
+            
+            ctx.font = 'bold 22px sans-serif';
+            ctx.fillStyle = menuSel === 0 ? '#4CAF50' : '#888';
+            ctx.fillText('⌂ ' + t('menu'), W/2, 420);
+        } else {
+            // Tela de sucesso normal para níveis intermediários
+            ctx.shadowColor = '#4CAF50';
+            ctx.shadowBlur = 20;
+            ctx.font = 'bold 52px sans-serif';
+            ctx.fillStyle = '#4CAF50';
+            ctx.textAlign = 'center';
+            ctx.fillText('✓ ' + t('success'), W/2, 150);
+            ctx.shadowBlur = 0;
+            
+            ctx.font = 'bold 36px sans-serif';
+            ctx.fillStyle = '#ffeb3b';
+            ctx.fillText(`${t('score')}: ${score}`, W/2, 230);
+            
+            ctx.font = '24px sans-serif';
+            ctx.fillStyle = '#888';
+            ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 280);
+            
+            ctx.font = 'bold 22px sans-serif';
             ctx.fillStyle = menuSel === 0 ? '#4CAF50' : '#888';
             ctx.fillText('→ ' + t('nextLevel'), W/2, 360);
+            ctx.fillStyle = menuSel === 1 ? '#4CAF50' : '#888';
+            ctx.fillText('⌂ ' + t('menu'), W/2, 400);
         }
-        ctx.fillStyle = menuSel === 1 || !hasNextLevel ? '#4CAF50' : '#888';
-        ctx.fillText('⌂ ' + t('menu'), W/2, 400);
         
         ctx.fillStyle = '#666';
         ctx.font = '18px sans-serif';
@@ -2049,7 +2480,10 @@
             if (justPressed['ArrowUp'] || justPressed['KeyW']) { menuSel = (menuSel + 4) % 5; audio.playClick(); }
             if (justPressed['Space'] || justPressed['Enter']) {
                 audio.playClick();
-                if (menuSel === 0) startTransition('playing', () => startLevel(0));
+                if (menuSel === 0) {
+                    completedLevels.clear(); // Reseta os níveis completados ao começar um novo jogo
+                    startTransition('playing', () => startLevel(0));
+                }
                 else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
                 else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
                 else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
@@ -2058,13 +2492,16 @@
             drawMenu();
         }
         else if (state === 'levelSelect') {
-            if (justPressed['ArrowRight'] || justPressed['KeyD']) { levelSel = Math.min(9, levelSel + 1); audio.playClick(); }
+            const maxLevel = LEVELS.length - 1;
+            if (justPressed['ArrowRight'] || justPressed['KeyD']) { levelSel = Math.min(maxLevel, levelSel + 1); audio.playClick(); }
             if (justPressed['ArrowLeft'] || justPressed['KeyA']) { levelSel = Math.max(0, levelSel - 1); audio.playClick(); }
-            if (justPressed['ArrowDown'] || justPressed['KeyS']) { levelSel = Math.min(9, levelSel + 3); audio.playClick(); }
+            if (justPressed['ArrowDown'] || justPressed['KeyS']) { levelSel = Math.min(maxLevel, levelSel + 3); audio.playClick(); }
             if (justPressed['ArrowUp'] || justPressed['KeyW']) { levelSel = Math.max(0, levelSel - 3); audio.playClick(); }
             if (!transition.active && (justPressed['Space'] || justPressed['Enter'])) {
                 audio.playClick();
-                if (levelSel < 9) startTransition('playing', () => startLevel(levelSel));
+                if (levelSel < LEVELS.length) {
+                    startTransition('playing', () => startLevel(levelSel));
+                }
                 else state = 'menu';
             }
             if (justPressed['Escape']) { state = 'menu'; audio.playClick(); }
@@ -2125,8 +2562,26 @@
             if (justPressed['Escape']) { state = 'menu'; audio.playClick(); }
         }
         else if (state === 'playing') {
+            // ATALHO DE TESTE: Pressione 'F' para testar a tela final
+            if (justPressed['KeyF']) {
+                currentLevel = LEVELS.length - 1; // Vai para o último nível
+                // Marca TODOS os níveis como completados para mostrar a tela especial
+                for (let i = 0; i < LEVELS.length; i++) {
+                    completedLevels.add(i);
+                }
+                // Simula um pouso bem-sucedido
+                score = 1000;
+                totalScore = 5000;
+                state = 'success';
+                menuSel = 0; // Reset menu selection
+                audio.playSuccess();
+                // Música removida - apenas efeitos sonoros
+            }
+            
             const level = LEVELS[currentLevel];
-            const gravityMod = lander.slowmo ? 0.5 : 1;
+            
+            // Show/hide shoot button for boss level
+            const gravityMod = lander.slowmo ? 0.3 : 1; // Redução de 70% na gravidade (mais forte!)
             
             // Physics
             lander.thrust = keys['Space'] || keys['ArrowUp'] || keys['KeyW'];
@@ -2141,7 +2596,7 @@
             
             // Apply thrust
             if (lander.thrust && lander.fuel > 0) {
-                lander.vy -= THRUST_POWER[level.planet] * gravityMod;
+                lander.vy -= THRUST_POWER[level.planet];
                 lander.fuel -= FUEL_RATE;
                 particles.emitThrust(lander.x, lander.y + LANDER_H/2);
                 if (Math.random() < 0.3) audio.playThrust();
@@ -2193,12 +2648,28 @@
                 audio.playCrash();
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
+                // Stop boss from continuing
+                if (level.boss && boss) {
+                    boss = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                }
             }
             
             checkPowerupCollision();
             
-            // Check landing
+            // Out of fuel check
             const bottom = lander.y + LANDER_H/2;
+            if (lander.fuel <= 0 && lander.vy > 0.5 && bottom < PAD_Y - 80) {
+                failReason = 'noFuel';
+                particles.emitExplosion(lander.x, lander.y);
+                screenShake = 15;
+                audio.playCrash();
+                state = 'failure';
+                document.getElementById('touchControls').classList.remove('active');
+            }
+            
+            // Check landing
             // Níveis fáceis: aceita pouso um pouco antes de tocar
             const easyLevels = [0, 1, 2, 3, 6]; // Moon 1-3, Mars 1, Earth 1
             const landingThreshold = easyLevels.includes(currentLevel) ? PAD_Y - 10 : PAD_Y;
@@ -2213,7 +2684,11 @@
                 else if (currentLevel === 1) horizontalTolerance = 60; // Moon 2 - muito fácil
                 else if (currentLevel === 2) horizontalTolerance = 50; // Moon 3 - fácil
                 else if (currentLevel === 3) horizontalTolerance = 45; // Mars 1 - fácil
+                else if (currentLevel === 4) horizontalTolerance = 35; // Mars 2 - mais obstáculos, pouso mais fácil
+                else if (currentLevel === 5) horizontalTolerance = 30; // Mars 3 - mais obstáculos, pouso mais fácil
                 else if (currentLevel === 6) horizontalTolerance = 40; // Earth 1 - fácil
+                else if (currentLevel === 7) horizontalTolerance = 30; // Earth 2 - mais obstáculos, pouso mais fácil
+                else if (currentLevel === 8) horizontalTolerance = 25; // Earth 3 - mais obstáculos, pouso mais fácil
                 
                 if (landerLeft >= padX - horizontalTolerance && landerRight <= padX + PAD_W + horizontalTolerance) {
                     if (totalSpeed <= level.safeSpeed) {
@@ -2233,7 +2708,11 @@
                         particles.emitSuccess(lander.x, lander.y);
                         audio.playSuccess();
                         menuSel = 0;
+                        // Marca este nível como completo
+                        completedLevels.add(currentLevel);
                         state = 'success';
+                        
+                        // Música removida - apenas efeitos sonoros
                     } else {
                         failReason = 'tooFast';
                         particles.emitExplosion(lander.x, lander.y);
@@ -2248,14 +2727,6 @@
                     audio.playCrash();
                     state = 'failure';
                 }
-                document.getElementById('touchControls').classList.remove('active');
-            }
-            
-            // Out of fuel check
-            if (lander.fuel <= 0 && lander.vy > 0.5 && PAD_Y - bottom > 80) {
-                failReason = 'noFuel';
-                state = 'failure';
-                audio.playCrash();
                 document.getElementById('touchControls').classList.remove('active');
             }
             
@@ -2291,6 +2762,18 @@
             drawTutorial();
             drawMascot();
             drawFlash();
+            
+            // Efeito visual de slow motion na tela toda
+            if (lander.slowmo) {
+                // Overlay roxo suave na tela toda
+                ctx.fillStyle = `rgba(156, 39, 176, ${0.08 + Math.sin(Date.now()/200) * 0.04})`;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Bordas brilhantes
+                ctx.strokeStyle = `rgba(200, 100, 255, ${0.3 + Math.sin(Date.now()/150) * 0.2})`;
+                ctx.lineWidth = 4;
+                ctx.strokeRect(2, 2, W - 4, H - 4);
+            }
             
             ctx.restore();
         }
@@ -2336,6 +2819,7 @@
     function init() {
         detectMobile();
         setupTouchControls();
+        setupMenuControls();
         
         // Handle resize
         window.addEventListener('resize', () => {
