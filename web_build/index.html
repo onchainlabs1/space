@@ -3184,8 +3184,16 @@
             if (level.boss && bossDefeated) {
                 // Boss defeated! Victory!
                 const fuelBonus = Math.floor(lander.fuel * 10);
-                score = fuelBonus + 500; // Bonus for defeating boss
+                const bossBonus = 500; // Bonus for defeating boss
+                const livesBonus = playerLives * 200; // Bonus for remaining lives
+                score = fuelBonus + bossBonus + livesBonus;
                 totalScore += score;
+                
+                // Save high score (boss uses 'earth' category)
+                highScores[level.planet].push(score);
+                highScores[level.planet].sort((a, b) => b - a);
+                highScores[level.planet] = highScores[level.planet].slice(0, 3);
+                localStorage.setItem('spaceLanderScores', JSON.stringify(highScores));
                 
                 particles.emitSuccess(lander.x, lander.y);
                 audio.playSuccess();
