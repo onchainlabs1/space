@@ -2560,10 +2560,13 @@
             ctx.fillStyle = '#ffd700';
             ctx.fillText(`${t('total')}: ${totalScore}`, W/2, 380);
             
-            // Mensagem de parabéns
-            ctx.font = '20px sans-serif';
-            ctx.fillStyle = '#aaa';
+            // Mensagem de parabéns (mais visível)
+            ctx.font = 'bold 22px sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 10;
             ctx.fillText(lang === 'hu' ? '⭐ Gratulálunk! Te vagy az igazi űrhajós! ⭐' : '⭐ Congratulations! You are a true astronaut! ⭐', W/2, 430);
+            ctx.shadowBlur = 0;
             
             // Botão Menu
             ctx.font = 'bold 22px sans-serif';
