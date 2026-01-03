@@ -647,7 +647,7 @@
     let bossDefeated = false;
     let lastPlayerShot = 0;
     let playerLives = 2; // 2 vidas (corações)
-    const PLAYER_SHOOT_COOLDOWN = 500; // 0.5 segundos
+    const PLAYER_SHOOT_COOLDOWN = 150; // 0.15 segundos - tiro rápido!
     
     // Level configurations
     const LEVELS = [
@@ -1149,14 +1149,21 @@
         
         const level = LEVELS[currentLevel];
         
-        // Player shooting with X key
+        // Player shooting with X key - rapid fire!
         if ((keys['KeyX'] || keys['ShiftLeft'] || keys['ShiftRight']) && 
             Date.now() - lastPlayerShot > PLAYER_SHOOT_COOLDOWN) {
+            // Double shot!
             playerBullets.push({
-                x: lander.x,
+                x: lander.x - 8,
                 y: lander.y - LANDER_H/2,
-                vy: -8,
-                radius: 5
+                vy: -12,
+                radius: 4
+            });
+            playerBullets.push({
+                x: lander.x + 8,
+                y: lander.y - LANDER_H/2,
+                vy: -12,
+                radius: 4
             });
             lastPlayerShot = Date.now();
             audio.playClick();
