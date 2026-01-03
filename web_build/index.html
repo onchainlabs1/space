@@ -3037,7 +3037,7 @@
             // Spawn power-ups
             spawnPowerup();
             
-            // Check collisions
+            // Check collisions (works for all levels, including boss)
             const collision = checkCollisions();
             if (collision) {
                 failReason = collision;
@@ -3049,10 +3049,12 @@
                 state = 'failure';
                 document.getElementById('touchControls').classList.remove('active');
                 // Stop boss from continuing - CRITICAL: Clear boss immediately
-                bossActive = false;
-                bossData = null;
-                bossBullets = [];
-                playerBullets = [];
+                if (bossActive) {
+                    bossActive = false;
+                    bossData = null;
+                    bossBullets = [];
+                    playerBullets = [];
+                }
                 // Exit early to prevent any further processing
                 return;
             }
