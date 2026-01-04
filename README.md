@@ -2,11 +2,9 @@
 
 An educational space lander game that teaches physics concepts to kids aged 7-10. Land your spacecraft on different planets while learning about gravity, inertia, and energy conservation.
 
-![Space Gravity Menu](docs/screenshots/menu.png)
-
 ## 🎮 Play Now
 
-**[Play Online on itch.io](https://your-username.itch.io/space-gravity)** – No download required!
+**[Play Online on itch.io](https://onchainlabs1.itch.io/space-gravity)** – No download required!
 
 ## ✨ Features
 
@@ -71,8 +69,8 @@ Land your spacecraft safely on the green landing pad before running out of fuel!
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/space-gravity.git
-   cd space-gravity
+   git clone https://github.com/onchainlabs1/space.git
+   cd space
    ```
 
 2. Start a local server:
@@ -118,19 +116,22 @@ Perfect for:
 ## 🏗️ Project Structure
 
 ```
-space-gravity/
+space/
 ├── game/
-│   └── index.html      # Complete game (single file)
+│   └── index.html          # Complete game (single file)
+├── web_build/
+│   └── index.html          # Alternative build location
 ├── docs/
-│   ├── GAME_MANUAL.md
-│   ├── EDUCATIONAL_GUIDE.md
-│   ├── TECHNICAL_GUIDE.md
-│   └── DEPLOYMENT.md
+│   ├── GAME_MANUAL.md      # Gameplay guide
+│   ├── EDUCATIONAL_GUIDE.md # Physics & teaching
+│   ├── TECHNICAL_GUIDE.md  # Code architecture
+│   └── DEPLOYMENT.md       # Deployment instructions
 ├── legacy/
-│   └── src/            # Original Python version
+│   └── src/                # Original Python version
 ├── README.md
-├── LICENSE
+├── LICENSE                 # MIT License
 ├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
 └── CHANGELOG.md
 ```
 
