@@ -199,7 +199,7 @@ After completing all 9 levels, you face the **Alien Mothership**!
 - Keep moving to avoid projectiles
 - Shoot continuously – fire rate is fast
 - Shield power-up is your best friend
-- You have 3 lives (hearts) for this battle
+- You have 2 lives (hearts) for this battle
 - Asteroids and aliens also appear – stay alert!
 
 ### Victory!
@@ -214,15 +214,23 @@ If you completed ALL levels in sequence + boss, you'll see the special **Champio
 
 ### Level Score Calculation
 
+The score for each level is calculated using three components:
+
 ```
-Score = Fuel Remaining × 10 + Landing Bonus
+Score = Fuel Bonus + Speed Bonus + Accuracy Bonus
 ```
 
-| Landing Quality | Bonus |
-|-----------------|-------|
-| Perfect (very slow) | +500 |
-| Good (slow) | +250 |
-| Acceptable (medium) | +100 |
+| Component | Formula | Description |
+|-----------|---------|-------------|
+| **Fuel Bonus** | Remaining fuel × 10 | Save fuel for higher score! |
+| **Speed Bonus** | (Safe speed - Your speed) × 20 | Landing slower = more points |
+| **Accuracy Bonus** | Landing precision × 300 | Landing in center of pad = max bonus |
+
+**Example:**
+- Fuel: 50 remaining → +500 points
+- Speed: 30 below safe speed → +600 points  
+- Accuracy: Perfect center → +300 points
+- **Total: 1400 points**
 
 ### High Scores
 
@@ -232,10 +240,19 @@ Score = Fuel Remaining × 10 + Landing Bonus
 
 ### Boss Score
 
-- Points awarded based on:
-  - Speed of defeating boss
-  - Remaining lives
-  - Power-ups collected
+The boss level uses a different scoring system:
+
+```
+Score = Fuel Bonus + Boss Defeat Bonus + Lives Bonus
+```
+
+| Component | Formula |
+|-----------|---------|
+| **Fuel Bonus** | Remaining fuel × 10 |
+| **Boss Defeat Bonus** | +500 points (fixed) |
+| **Lives Bonus** | Remaining lives × 200 |
+
+**Tip:** Survive with both lives and maximum fuel for the highest score! (Max lives bonus: 400 points)
 
 ---
 
