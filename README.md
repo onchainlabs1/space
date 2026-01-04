@@ -1,165 +1,155 @@
-# Space Mission – Land Safely! / ŰRMISSZIÓ – Segíts a Nave!
+# 🚀 Space Gravity – Land Safely!
 
-An educational space lander game for 7-year-olds, built with Python and pygame-ce, packaged for web using pygbag.
+An educational space lander game that teaches physics concepts to kids aged 7-10. Land your spacecraft on different planets while learning about gravity, inertia, and energy conservation.
 
-## Quick Start
+![Space Gravity Menu](docs/screenshots/menu.png)
 
-### Prerequisites
+## 🎮 Play Now
 
-- Python 3.9 or higher
-- macOS (tested on MacBook Air)
+**[Play Online on itch.io](https://your-username.itch.io/space-gravity)** – No download required!
 
-### Setup (macOS)
+## ✨ Features
 
-1. **Create a virtual environment:**
+- **9 Progressive Levels** across 3 planets (Moon, Mars, Earth)
+- **Final Boss Battle** – Defeat the alien mothership!
+- **Power-ups** – Collect fuel, shields, and slow-motion
+- **Obstacles** – Dodge asteroids and alien ships
+- **Educational** – Learn real physics concepts
+- **Kid-friendly** – Simple controls, colorful graphics
+- **Bilingual** – English and Hungarian languages
+- **Works everywhere** – Desktop, mobile, and tablet
+
+## 🎯 Gameplay
+
+### Objective
+Land your spacecraft safely on the green landing pad before running out of fuel!
+
+### Controls
+
+| Action | Keyboard | Mobile |
+|--------|----------|--------|
+| Thrust Up | `SPACE` or `↑` | 🔥 Button |
+| Move Left/Right | `←` `→` | ◀ ▶ Buttons |
+| Shoot (Boss only) | `X` | 💥 Button |
+| Mute Sound | `M` | – |
+| Change Language | `L` | – |
+
+### Planets & Difficulty
+
+| Planet | Gravity | Difficulty | What You Learn |
+|--------|---------|------------|----------------|
+| 🌙 Moon | 1.6 m/s² | Easy | Basic controls, gentle landing |
+| 🔴 Mars | 3.7 m/s² | Medium | Fuel management, wind effects |
+| 🌍 Earth | 9.8 m/s² | Hard | Precise control, obstacle avoidance |
+
+### Power-ups
+
+| Icon | Power-up | Effect |
+|------|----------|--------|
+| ⛽ | Fuel | Restores 30 fuel units |
+| 🛡️ | Shield | Temporary invincibility |
+| ⏱️ | Slow-Mo | Reduces gravity for easier control |
+
+### Obstacles
+
+- **☄️ Asteroids** – Floating rocks that damage your ship
+- **👾 Alien Ships** – Moving enemies that fire at you
+- **🌬️ Wind** – Pushes your ship sideways (Mars & Earth)
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Game Manual](docs/GAME_MANUAL.md) | Complete gameplay guide |
+| [Educational Guide](docs/EDUCATIONAL_GUIDE.md) | Physics concepts & classroom use |
+| [Technical Guide](docs/TECHNICAL_GUIDE.md) | Code architecture & customization |
+| [Deployment Guide](docs/DEPLOYMENT.md) | How to deploy on itch.io |
+
+## 🚀 Quick Start
+
+### Play Locally
+
+1. Clone the repository:
    ```bash
-   python3 -m venv venv
+   git clone https://github.com/your-username/space-gravity.git
+   cd space-gravity
    ```
 
-2. **Activate the virtual environment:**
+2. Start a local server:
    ```bash
-   source venv/bin/activate
+   cd game
+   python3 -m http.server 8080
    ```
 
-   You should see `(venv)` in your terminal prompt.
+3. Open http://localhost:8080 in your browser
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Deploy Your Own Version
 
-   Expected output:
-   ```
-   Collecting pygame-ce>=2.5.0
-   Collecting pygbag>=0.7.0
-   ...
-   Successfully installed pygame-ce-X.X.X pygbag-X.X.X ...
-   ```
+See the [Deployment Guide](docs/DEPLOYMENT.md) for instructions on deploying to itch.io or other platforms.
 
-4. **Run the game locally:**
-   ```bash
-   python src/main.py
-   ```
+## 🤝 Contributing
 
-   Or use the convenience script:
-   ```bash
-   chmod +x run_local.sh
-   ./run_local.sh
-   ```
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 
-   Expected: A window opens with the game menu. Use arrow keys or W/S to navigate, SPACE/ENTER to select.
+### Ideas for Contributions
 
-### Building for Web
+- 🌍 **New planets** – Add Venus, Jupiter, or fictional planets
+- 🎨 **Visual themes** – Create new ship designs or backgrounds
+- 🌐 **Translations** – Add support for more languages
+- 🎵 **Sound effects** – Improve audio experience
+- 📱 **Mobile UX** – Enhance touch controls
+- 🐛 **Bug fixes** – Help us squash bugs
 
-1. **Make sure you're in the virtual environment:**
-   ```bash
-   source venv/bin/activate
-   ```
+## 📖 What Players Learn
 
-2. **Build the web version:**
-   ```bash
-   python -m pygbag --template index.html src/main.py
-   ```
+This game teaches important physics concepts through gameplay:
 
-   Or use the convenience script:
-   ```bash
-   chmod +x build_web.sh
-   ./build_web.sh
-   ```
+1. **Gravity is constant** – The ship always accelerates downward
+2. **Inertia matters** – You can't stop instantly; start braking early
+3. **Energy is limited** – Fuel runs out; use it wisely
+4. **Different worlds, different rules** – Gravity varies by planet
 
-   Expected output:
-   ```
-   ...
-   Build complete! Output is in build/web/
-   ```
+Perfect for:
+- Elementary school science classes
+- Homeschool physics lessons
+- STEM education programs
+- Learning through play
 
-3. **Serve the web build locally:**
-   ```bash
-   cd build/web
-   python -m http.server 8000
-   ```
-
-4. **Open in browser:**
-   - Navigate to `http://localhost:8000`
-   - The game should load and be playable in the browser
-   - Works offline (no network calls at runtime)
-
-## How to Play
-
-- **Controls:** Press and hold SPACE or UP arrow to thrust upward. Release to stop thrusting.
-- **Goal:** Land softly on the landing pad before running out of fuel.
-- **Levels:** Three planets with different gravity and fuel:
-  - **Moon:** Low gravity, easier to control
-  - **Mars:** Medium gravity
-  - **Earth:** High gravity, most challenging
-
-## Educational Concepts
-
-The game teaches:
-1. **Gravity acts continuously** - The ship always accelerates downward
-2. **Braking takes time** - You need to start thrusting early to slow down
-3. **Energy is limited** - Fuel decreases while thrusting
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
-space/
-├── src/                    # Source code
-│   ├── main.py            # Entry point
-│   ├── game.py            # Main game loop
-│   ├── menu.py            # Menu system
-│   ├── physics.py         # Physics engine
-│   ├── renderer.py        # Rendering functions
-│   ├── i18n.py            # Localization (HU/EN)
-│   └── constants.py       # Game constants
-├── build/                 # Web build output (gitignored)
-├── docs/                  # Documentation
-├── requirements.txt       # Python dependencies
-├── build_web.sh          # Web build script
-└── run_local.sh          # Local run script
+space-gravity/
+├── game/
+│   └── index.html      # Complete game (single file)
+├── docs/
+│   ├── GAME_MANUAL.md
+│   ├── EDUCATIONAL_GUIDE.md
+│   ├── TECHNICAL_GUIDE.md
+│   └── DEPLOYMENT.md
+├── legacy/
+│   └── src/            # Original Python version
+├── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+└── CHANGELOG.md
 ```
 
-## Troubleshooting
+## 📜 License
 
-### Game won't start locally
-- Make sure virtual environment is activated: `source venv/bin/activate`
-- Check Python version: `python3 --version` (should be 3.9+)
-- Reinstall dependencies: `pip install -r requirements.txt --force-reinstall`
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Web build fails
-- Ensure pygbag is installed: `pip install pygbag>=0.7.0`
-- Check that `src/main.py` exists and is valid Python
-- Try building without template: `python -m pygbag src/main.py`
+## 🙏 Credits
 
-### Game runs but controls don't work
-- Make sure the game window has focus (click on it)
-- Try both SPACE and UP arrow keys
-- Check terminal for error messages
+- **Game Design & Development** – Created as an educational project
+- **Inspired by** – Classic lunar lander games
+- **Built with** – HTML5 Canvas, JavaScript
 
-### Font rendering issues (Hungarian characters)
-- The game uses pygame's default font which should support UTF-8
-- If special characters (ő, ű) don't display, try switching to English (L key in menu)
+## 🌟 Star History
 
-## Development
+If you find this project useful, please consider giving it a ⭐ on GitHub!
 
-### Running Tests
-```bash
-# Syntax check
-python -m py_compile src/*.py
+---
 
-# Run game
-python src/main.py
-```
-
-### Modifying Game Parameters
-Edit `src/constants.py` to adjust:
-- Gravity values per planet
-- Fuel amounts
-- Safe landing speeds
-- Screen size
-- Colors
-
-## License
-
-Educational use.
-
+<p align="center">
+  Made with ❤️ for young space explorers everywhere
+</p>

@@ -2,7 +2,7 @@
 # dependencies = ["pygame-ce"]
 # ///
 """
-Space Mission – Land Safely! / ŰRMISSZIÓ – Segíts a Nave!
+Space Gravity – Land Safely! / ŰRMISSZIÓ – Segíts a Nave!
 Educational space lander game for 7-year-olds.
 Compatible with pygbag for web deployment.
 """
@@ -89,7 +89,7 @@ TEXTS = {
         "lang_toggle": "L = nyelv",
     },
     "en": {
-        "title": "SPACE MISSION – Land Safely!",
+        "title": "SPACE GRAVITY – Land Safely!",
         "start": "Play",
         "level_select": "Level",
         "credits": "Info",
@@ -312,7 +312,7 @@ def draw_failure(screen, reason, lang, tfont, mfont):
 async def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Space Mission – Land Safely!")
+    pygame.display.set_caption("Space Gravity – Land Safely!")
     clock = pygame.time.Clock()
     
     tfont = pygame.font.Font(None, 52)

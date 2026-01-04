@@ -1,3 +1,7 @@
+# ========================
+# Space Gravity .gitignore
+# ========================
+
 # Python
 __pycache__/
 *.py[cod]
@@ -9,24 +13,58 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv/
 
 # Build outputs
 build/
 dist/
 *.egg-info/
+*.apk
+*.wasm
+*.data
 
-# IDE
+# IDE / Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.cursor/
 
-# OS
+# OS Files
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# pygbag
-*.wasm
-*.data
+# Logs
+*.log
+npm-debug.log*
 
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Archives (don't commit zips)
+*.zip
+*.tar.gz
+*.rar
+
+# Local testing
+.env
+.env.local
+
+# Cache
+.cache/
+*.cache
+
+# Node (if used for tooling)
+node_modules/
+
+# Legacy build artifacts
+web_build/
+legacy/src/build/
