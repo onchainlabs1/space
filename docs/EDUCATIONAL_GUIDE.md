@@ -168,7 +168,7 @@ Earth ■■■■■■■■■■  9.8 m/s²  (Hardest)
 
 ### Age Appropriateness
 
-- **Recommended ages:** 7-10 years
+- **Recommended ages:** 5-10 years
 - **Reading level:** Simple English
 - **Math required:** None (concepts are visual)
 

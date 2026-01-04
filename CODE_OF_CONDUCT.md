@@ -24,7 +24,7 @@ Examples of unacceptable behavior:
 * Public or private harassment
 * Publishing others' private information without permission
 * Other conduct inappropriate for an educational children's project
-* Any content not suitable for ages 7+
+* Any content not suitable for ages 5+
 
 ## Enforcement Responsibilities
 

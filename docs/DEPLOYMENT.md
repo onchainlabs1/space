@@ -69,7 +69,7 @@ Land safely on different planets! Learn about gravity, physics, and fuel managem
 
 🌍 Languages: English / Magyar
 
-Perfect for ages 7-10. Learn physics through play!
+Perfect for ages 5-10. Learn physics through play!
 ```
 
 ### Step 4: Upload

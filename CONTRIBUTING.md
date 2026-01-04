@@ -111,7 +111,7 @@ function calc(a,b){return a*10+(100-b>0?100-b:0);}
 When contributing features, keep these principles in mind:
 
 1. **Educational First** – Features should teach or reinforce physics concepts
-2. **Kid-Friendly** – Appropriate for ages 7-10, no violence or scary content
+2. **Kid-Friendly** – Appropriate for ages 5-10, no violence or scary content
 3. **Accessible** – Works on various devices and skill levels
 4. **Simple Controls** – Don't overcomplicate the control scheme
 5. **Fair Challenge** – Difficulty should be challenging but not frustrating

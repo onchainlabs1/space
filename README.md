@@ -1,6 +1,6 @@
 # 🚀 Space Gravity – Land Safely!
 
-An educational space lander game that teaches physics concepts to kids aged 7-10. Land your spacecraft on different planets while learning about gravity, inertia, and energy conservation.
+An educational space lander game that teaches physics concepts to kids aged 5-10. Land your spacecraft on different planets while learning about gravity, inertia, and energy conservation.
 
 ## 🎮 Play Now
 
