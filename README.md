@@ -4,7 +4,7 @@ An educational space lander game that teaches physics concepts to kids aged 7-10
 
 ## 🎮 Play Now
 
-**[Play Online on itch.io](https://onchainlabs1.itch.io/space-gravity)** – No download required!
+**[Play Online on itch.io](https://spacearon.itch.io/space-mission)** – No download required!
 
 ## ✨ Features
 
