@@ -691,6 +691,9 @@
             tut1: 'Press UP or SPACE to thrust up!',
             tut2: 'Use LEFT/RIGHT to move sideways',
             tut3: 'Land slowly on the green pad!',
+            tut4: 'Collect power-ups: Fuel ⛽, Shield 🛡️, Slow-Mo ⏱️',
+            tut5: 'Avoid obstacles: Asteroids ☄️ and Alien ships 👾',
+            tut6: 'Boss level: Press X to shoot at green weak spots!',
             mascot_fast: 'Slow down!', mascot_fuel: 'Save fuel!', mascot_aim: 'Aim for the pad!',
             mascot_good: 'Great job!', mascot_try: 'You can do it!',
             mascot_boss_shoot: 'Press X to shoot!', mascot_boss_weak: 'Hit the green spots!', mascot_boss_defeat: 'Almost there!',
@@ -716,6 +719,9 @@
             tut1: 'Nyomd a FEL-et vagy SPACE-t a toláshoz!',
             tut2: 'BAL/JOBB gombokkal oldalra mozoghatsz',
             tut3: 'Lassan szállj le a zöld platformra!',
+            tut4: 'Gyűjts erősítőket: Üzemanyag ⛽, Pajzs 🛡️, Lassítás ⏱️',
+            tut5: 'Kerüld az akadályokat: Aszteroidák ☄️ és Űrhajók 👾',
+            tut6: 'Főellenség: Nyomj X-et a zöld gyenge pontokra!',
             mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a padot!',
             mascot_good: 'Szuper!', mascot_try: 'Menni fog!',
             mascot_boss_shoot: 'Nyomj X-et a lövéshez!', mascot_boss_weak: 'Célozd a zöld pontokat!', mascot_boss_defeat: 'Majdnem kész!',
@@ -2956,22 +2962,52 @@
             '  • Braking takes time and fuel',
             '  • Plan ahead and aim carefully!',
             '',
-            '🎮 Controls:',
+            '🎮 Keyboard Controls:',
             '  ↑/SPACE = Thrust up',
             '  ←/→ = Move sideways',
+            '  X = Shoot (Boss level only)',
             '  M = Toggle sound',
+            '  L = Change language',
             '',
-            'Land slowly on the green pad to win!'
+            '📱 Mobile Controls:',
+            '  🔥 = Thrust  ◀▶ = Move',
+            '  💥 = Shoot (Boss only)',
+            '',
+            '💎 Power-ups:',
+            '  ⛽ Fuel - Restores 30 fuel',
+            '  🛡️ Shield - 5 sec invincibility',
+            '  ⏱️ Slow-Mo - Reduces gravity',
+            '',
+            '⚠️ Obstacles:',
+            '  ☄️ Asteroids - Dodge them!',
+            '  👾 Aliens - Shoot or avoid!',
+            '  🌬️ Wind - Mars & Earth only',
+            '',
+            '🎯 Goal: Land slowly on green pad!'
         ];
         
-        ctx.font = '18px sans-serif';
+        ctx.font = '16px sans-serif';
+        let yPos = 100;
         lines.forEach((line, i) => {
-            ctx.fillStyle = line.startsWith('What') || line.startsWith('🎮') ? '#4CAF50' : '#ccc';
-            ctx.fillText(line, W/2, 130 + i * 28);
+            if (line === '') {
+                yPos += 8;
+                return;
+            }
+            if (line.startsWith('What') || line.startsWith('🎮') || line.startsWith('📱') || 
+                line.startsWith('💎') || line.startsWith('⚠️') || line.startsWith('🎯')) {
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = 'bold 18px sans-serif';
+            } else {
+                ctx.fillStyle = '#ccc';
+                ctx.font = '16px sans-serif';
+            }
+            ctx.fillText(line, W/2, yPos);
+            yPos += 22;
         });
         
         ctx.fillStyle = '#888';
-        ctx.fillText('Press ESC or SPACE to return', W/2, H - 30);
+        ctx.font = '16px sans-serif';
+        ctx.fillText('Press ESC or SPACE to return', W/2, H - 20);
         ctx.textAlign = 'left';
     }
     
@@ -2989,22 +3025,25 @@
         const steps = [
             { text: t('tut1'), hint: '↑ or SPACE', icon: '🚀' },
             { text: t('tut2'), hint: '← →', icon: '↔️' },
-            { text: t('tut3'), hint: 'Land gently!', icon: '🎯' }
+            { text: t('tut3'), hint: 'Land gently!', icon: '🎯' },
+            { text: t('tut4'), hint: 'Collect them!', icon: '💎' },
+            { text: t('tut5'), hint: 'Dodge carefully!', icon: '⚠️' },
+            { text: t('tut6'), hint: 'X key', icon: '💥' }
         ];
         
-        ctx.font = '24px sans-serif';
+        ctx.font = '22px sans-serif';
         ctx.fillStyle = '#fff';
-        ctx.fillText(steps[tut].icon + ' ' + steps[tut].text, W/2, 200);
+        ctx.fillText(steps[tut].icon + ' ' + steps[tut].text, W/2, 180);
         
-        ctx.font = 'bold 36px sans-serif';
+        ctx.font = 'bold 32px sans-serif';
         ctx.fillStyle = '#ffeb3b';
-        ctx.fillText(steps[tut].hint, W/2, 280);
+        ctx.fillText(steps[tut].hint, W/2, 250);
         
         // Progress dots
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
             ctx.fillStyle = i === tut ? '#4CAF50' : '#444';
             ctx.beginPath();
-            ctx.arc(W/2 - 30 + i * 30, 350, 8, 0, Math.PI * 2);
+            ctx.arc(W/2 - 75 + i * 30, 300, 6, 0, Math.PI * 2);
             ctx.fill();
         }
         
@@ -3158,9 +3197,9 @@
             if (justPressed['Space'] || justPressed['Enter']) {
                 audio.playClick();
                 tutorialStep++;
-                if (tutorialStep >= 3) {
+                if (tutorialStep >= 6) {
                     state = 'menu';
-                    showTutorial = false;
+                    tutorialStep = 0;
                 }
             }
             if (justPressed['Escape']) { state = 'menu'; audio.playClick(); }
