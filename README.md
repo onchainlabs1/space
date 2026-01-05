@@ -61,7 +61,7 @@ Land your spacecraft safely on the green landing pad before running out of fuel!
 | [Game Manual](docs/GAME_MANUAL.md) | Complete gameplay guide |
 | [Educational Guide](docs/EDUCATIONAL_GUIDE.md) | Physics concepts & classroom use |
 | [Technical Guide](docs/TECHNICAL_GUIDE.md) | Code architecture & customization |
-| [Deployment Guide](docs/DEPLOYMENT.md) | How to deploy on itch.io |
+| [Deployment Guide](docs/DEPLOYMENT.md) | Deploy to itch.io & GitHub Pages |
 
 ## 🚀 Quick Start
 
