@@ -15,7 +15,6 @@
             min-height: 100vh;
             font-family: 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
-            touch-action: none;
         }
         #gameContainer {
             position: relative;
@@ -33,6 +32,9 @@
             width: 100%;
             height: auto;
             object-fit: contain;
+            position: relative;
+            z-index: 1;
+            touch-action: none;
         }
         @media (max-width: 960px) {
             #gameCanvas {
@@ -53,22 +55,28 @@
             padding: 0 20px;
             justify-content: space-between;
             pointer-events: none;
+            z-index: 10000;
         }
         .touch-controls.active { display: flex; }
         .touch-btn {
             pointer-events: all;
-            width: 70px;
-            height: 70px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
             background: rgba(76, 175, 80, 0.3);
             border: 3px solid rgba(76, 175, 80, 0.6);
             color: #4CAF50;
-            font-size: 28px;
+            font-size: 32px;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
             transition: all 0.1s;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            position: relative;
+            z-index: 10001;
         }
         .touch-btn:active, .touch-btn.pressed {
             background: rgba(76, 175, 80, 0.6);
@@ -80,6 +88,8 @@
             background: rgba(255, 152, 0, 0.3);
             border-color: rgba(255, 152, 0, 0.6);
             color: #ff9800;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
         }
         .touch-btn.thrust:active, .touch-btn.thrust.pressed {
             background: rgba(255, 152, 0, 0.6);
@@ -91,11 +101,39 @@
             border-color: rgba(156, 39, 176, 0.6);
             color: #9c27b0;
             font-size: 20px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
         }
         .touch-btn.shoot:active, .touch-btn.shoot.pressed {
             background: rgba(156, 39, 176, 0.6);
         }
         .side-btns { display: flex; gap: 10px; align-items: center; }
+        
+        /* Ajustes para telas horizontais (landscape) */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .touch-controls {
+                bottom: 10px;
+                padding: 0 10px;
+            }
+            .touch-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 26px;
+            }
+            .touch-btn.thrust {
+                width: 80px;
+                height: 80px;
+            }
+            .touch-btn.shoot {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            .side-btns {
+                gap: 8px;
+            }
+        }
+        
         .controls-hint {
             position: fixed;
             bottom: 10px;
@@ -763,20 +801,53 @@
         const btnThrust = document.getElementById('btnThrust');
         const btnShoot = document.getElementById('btnShoot');
         
+        if (!btnLeft || !btnRight || !btnThrust || !btnShoot) {
+            console.error('Touch control buttons not found!');
+            return;
+        }
+        
         const handleTouch = (btn, code, isStart) => {
+            if (!btn) return;
             keys[code] = isStart;
             btn.classList.toggle('pressed', isStart);
             if (isStart) audio.init();
         };
         
-        btnLeft.addEventListener('touchstart', e => { e.preventDefault(); handleTouch(btnLeft, 'ArrowLeft', true); });
-        btnLeft.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnLeft, 'ArrowLeft', false); });
-        btnRight.addEventListener('touchstart', e => { e.preventDefault(); handleTouch(btnRight, 'ArrowRight', true); });
-        btnRight.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnRight, 'ArrowRight', false); });
-        btnThrust.addEventListener('touchstart', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', true); });
-        btnThrust.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', false); });
-        btnShoot.addEventListener('touchstart', e => { e.preventDefault(); handleTouch(btnShoot, 'KeyX', true); });
-        btnShoot.addEventListener('touchend', e => { e.preventDefault(); handleTouch(btnShoot, 'KeyX', false); });
+        // Left button - Touch events
+        btnLeft.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnLeft, 'ArrowLeft', true); }, { passive: false });
+        btnLeft.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnLeft, 'ArrowLeft', false); }, { passive: false });
+        btnLeft.addEventListener('touchcancel', e => { e.preventDefault(); handleTouch(btnLeft, 'ArrowLeft', false); }, { passive: false });
+        // Left button - Mouse events
+        btnLeft.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnLeft, 'ArrowLeft', true); });
+        btnLeft.addEventListener('mouseup', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnLeft, 'ArrowLeft', false); });
+        btnLeft.addEventListener('mouseleave', e => { handleTouch(btnLeft, 'ArrowLeft', false); });
+        
+        // Right button - Touch events
+        btnRight.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnRight, 'ArrowRight', true); }, { passive: false });
+        btnRight.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnRight, 'ArrowRight', false); }, { passive: false });
+        btnRight.addEventListener('touchcancel', e => { e.preventDefault(); handleTouch(btnRight, 'ArrowRight', false); }, { passive: false });
+        // Right button - Mouse events
+        btnRight.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnRight, 'ArrowRight', true); });
+        btnRight.addEventListener('mouseup', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnRight, 'ArrowRight', false); });
+        btnRight.addEventListener('mouseleave', e => { handleTouch(btnRight, 'ArrowRight', false); });
+        
+        // Thrust button - Touch events
+        btnThrust.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnThrust, 'Space', true); }, { passive: false });
+        btnThrust.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnThrust, 'Space', false); }, { passive: false });
+        btnThrust.addEventListener('touchcancel', e => { e.preventDefault(); handleTouch(btnThrust, 'Space', false); }, { passive: false });
+        // Thrust button - Mouse events
+        btnThrust.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnThrust, 'Space', true); });
+        btnThrust.addEventListener('mouseup', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnThrust, 'Space', false); });
+        btnThrust.addEventListener('mouseleave', e => { handleTouch(btnThrust, 'Space', false); });
+        
+        // Shoot button - Touch events
+        btnShoot.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnShoot, 'KeyX', true); }, { passive: false });
+        btnShoot.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnShoot, 'KeyX', false); }, { passive: false });
+        btnShoot.addEventListener('touchcancel', e => { e.preventDefault(); handleTouch(btnShoot, 'KeyX', false); }, { passive: false });
+        // Shoot button - Mouse events
+        btnShoot.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnShoot, 'KeyX', true); });
+        btnShoot.addEventListener('mouseup', e => { e.preventDefault(); e.stopPropagation(); handleTouch(btnShoot, 'KeyX', false); });
+        btnShoot.addEventListener('mouseleave', e => { handleTouch(btnShoot, 'KeyX', false); });
     }
     
     // Setup Menu Controls
@@ -832,7 +903,12 @@
     // Detect mobile
     function detectMobile() {
         isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        document.getElementById('touchControls').classList.toggle('active', isMobile && state === 'playing');
+        const touchControls = document.getElementById('touchControls');
+        if (isMobile && state === 'playing') {
+            touchControls.classList.add('active');
+        } else {
+            touchControls.classList.remove('active');
+        }
     }
     
     // Click to start on menu and level select
@@ -1121,7 +1197,12 @@
         }
         
         state = 'playing';
-        document.getElementById('touchControls').classList.toggle('active', isMobile);
+        const touchControls = document.getElementById('touchControls');
+        if (isMobile) {
+            touchControls.classList.add('active');
+        } else {
+            touchControls.classList.remove('active');
+        }
     }
     
     function startTransition(target, callback) {
@@ -2565,7 +2646,7 @@
             ctx.font = 'bold 52px sans-serif';
             ctx.fillStyle = '#ffd700';
             ctx.textAlign = 'center';
-            ctx.fillText('🎉 ' + (lang === 'hu' ? 'CAMPEÃO!' : 'CHAMPION!') + ' 🎉', 0, 0);
+            ctx.fillText('🎉 ' + (lang === 'hu' ? 'BAJNOK!' : 'CHAMPION!') + ' 🎉', 0, 0);
             ctx.restore();
             
             // Subtítulo
