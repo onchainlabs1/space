@@ -615,8 +615,6 @@
     let flashAlpha = 0;
     let flashColor = '#ff0000';
     let transition = { active: false, alpha: 0, target: '', callback: null };
-    let tutorialStep = 0;
-    let showTutorial = true;
     let completedLevels = new Set(); // Rastreia quais níveis foram completados nesta sessão
     let mascotMessage = '';
     let mascotTimer = 0;
@@ -660,9 +658,9 @@
         { planet: 'mars', gravity: 0.10, fuel: 160, safeSpeed: 100, obstacles: 5, wind: 0.002, name: 'Mars 2' }, // 5 obstáculos (mais aliens)
         { planet: 'mars', gravity: 0.12, fuel: 140, safeSpeed: 90, obstacles: 6, wind: 0.003, name: 'Mars 3' }, // 6 obstáculos (muitos aliens)
         // Earth levels (7-9) - MÉDIO/DIFÍCIL
-        { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 100, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
-        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 80, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
-        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 70, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
+        { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 130, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
+        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 110, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
+        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 100, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
         // Boss level (10) - Chefe Final
         { planet: 'earth', gravity: 0.10, fuel: 300, safeSpeed: 100, obstacles: 0, wind: 0, name: 'Final Boss', boss: true },
     ];
@@ -816,7 +814,7 @@
         
         // Mostra/esconde controles baseado no estado (apenas no mobile, CSS cuida do desktop)
         const updateMenuControls = () => {
-            const showInStates = ['menu', 'levelSelect', 'explore', 'success', 'failure', 'info', 'tutorialMode'];
+            const showInStates = ['menu', 'levelSelect', 'explore', 'success', 'failure', 'info'];
             // Só atualiza se for mobile (no desktop o CSS já esconde)
             if (isMobile) {
                 if (showInStates.includes(state)) {
@@ -849,15 +847,14 @@
             const menuStartY = 220;
             const menuSpacing = 65;
             
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 4; i++) {
                 const itemY = menuStartY + i * menuSpacing;
                 if (clickY >= itemY - 25 && clickY <= itemY + 25) {
                     menuSel = i;
                     audio.playClick();
                     if (menuSel === 0) startTransition('playing', () => startLevel(0));
                     else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
-                    else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
-                    else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
+                    else if (menuSel === 2) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
                     else state = 'info';
                     break;
                 }
@@ -940,7 +937,7 @@
                 // Swipe up = previous item
                 if (diffY < -20) {
                     if (state === 'menu') {
-                        menuSel = (menuSel + 4) % 5;
+                        menuSel = (menuSel + 3) % 4;
                         audio.playClick();
                     } else if (state === 'levelSelect') {
                         levelSel = Math.max(0, levelSel - 3);
@@ -953,7 +950,7 @@
                 // Swipe down = next item
                 else if (diffY > 20) {
                     if (state === 'menu') {
-                        menuSel = (menuSel + 1) % 5;
+                        menuSel = (menuSel + 1) % 4;
                         audio.playClick();
                     } else if (state === 'levelSelect') {
                         const maxLevel = LEVELS.length - 1;
@@ -971,8 +968,7 @@
                     audio.playClick();
                     if (menuSel === 0) startTransition('playing', () => startLevel(0));
                     else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
-                    else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
-                    else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
+                    else if (menuSel === 2) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
                     else state = 'info';
                 } else if (state === 'levelSelect') {
                     audio.playClick();
@@ -1089,9 +1085,6 @@
         trail = [];
         particles.clear();
         screenShake = 0;
-        tutorialStep = 0;
-        tutorialTimer = 0;
-        showTutorial = true;
         
         // Set pad position
         padX = 100 + Math.random() * (W - 200 - PAD_W);
@@ -2297,57 +2290,6 @@
         ctx.restore();
     }
     
-    let tutorialTimer = 0;
-    const TUTORIAL_DURATION = 180; // 3 segundos (60fps)
-    
-    function drawTutorial() {
-        if (!showTutorial || tutorialStep > 2) return;
-        
-        // Auto-avança o tutorial após alguns segundos
-        tutorialTimer++;
-        if (tutorialTimer > TUTORIAL_DURATION) {
-            tutorialTimer = 0;
-            tutorialStep++;
-            if (tutorialStep > 2) showTutorial = false;
-        }
-        
-        const level = LEVELS[currentLevel];
-        let messages;
-        
-        // Mensagens diferentes para o boss
-        if (level && level.boss) {
-            messages = [
-                lang === 'hu' ? 'X = Lövés a főellenségre!' : 'X = Shoot the boss!',
-                lang === 'hu' ? 'Célozd a zöld pontokat!' : 'Aim for the green weak spots!',
-                lang === 'hu' ? 'Ne engedd, hogy eltaláljanak!' : 'Dodge the purple bullets!'
-            ];
-        } else {
-            messages = [t('tut1'), t('tut2'), t('tut3')];
-        }
-        const msg = messages[tutorialStep];
-        
-        // Fade out effect
-        const fadeOut = tutorialTimer > TUTORIAL_DURATION - 30 ? (TUTORIAL_DURATION - tutorialTimer) / 30 : 1;
-        
-        // Posição no TOPO da tela, compacto
-        const boxY = 120;
-        
-        ctx.globalAlpha = fadeOut * 0.9;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.beginPath();
-        ctx.roundRect(W/2 - 180, boxY, 360, 45, 8);
-        ctx.fill();
-        
-        ctx.strokeStyle = '#4CAF50';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🎮 ' + msg, W/2, boxY + 28);
-        ctx.globalAlpha = 1;
-    }
     
     // ============================================
     // MENU SCREENS
@@ -2406,7 +2348,7 @@
         ctx.fillText(t('subtitle'), W/2, 145);
         
         // Menu items - centered, better spacing
-        const items = [t('play'), t('levels'), t('tutorial'), t('explore'), t('info')];
+        const items = [t('play'), t('levels'), t('explore'), t('tutorial')];
         const menuStartY = 220;
         const menuSpacing = 65;
         
@@ -2943,12 +2885,32 @@
     function drawInfo() {
         drawBackground('earth');
         
-        ctx.font = 'bold 38px sans-serif';
+        ctx.font = 'bold 32px sans-serif';
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
-        ctx.fillText(t('info'), W/2, 70);
+        ctx.fillText(t('tutorial'), W/2, 60);
         
-        const lines = [
+        const lines = lang === 'hu' ? [
+            '🎓 Oktatási Űrhajó Landoló Játék',
+            '',
+            'Mit tanít:',
+            '  • A gravitáció folyamatosan lefelé húz',
+            '  • A fékezés időt és üzemanyagot igényel',
+            '  • Tervezz előre és célozz pontosan!',
+            '',
+            '🎮 Irányítás:',
+            '  ↑/SPACE = Felfelé tolás',
+            '  ←/→ = Oldalra mozgás',
+            '  M = Hang ki/bekapcsolás',
+            '',
+            'Lassan szállj le a zöld platformra!',
+            '',
+            '👾 Főellenség (Boss):',
+            '  X = Lövés a főellenségre',
+            '  Célozd a zöld gyenge pontokat!',
+            '  Kerüld el a lila lövedékeket!',
+            '  2 életed van a harcban'
+        ] : [
             '🎓 Educational Space Lander Game',
             '',
             'What it teaches:',
@@ -2961,56 +2923,34 @@
             '  ←/→ = Move sideways',
             '  M = Toggle sound',
             '',
-            'Land slowly on the green pad to win!'
+            'Land slowly on the green pad to win!',
+            '',
+            '👾 Final Boss:',
+            '  X = Shoot at the boss',
+            '  Aim for the green weak spots!',
+            '  Dodge the purple bullets!',
+            '  You have 2 lives in the battle'
         ];
         
-        ctx.font = '18px sans-serif';
+        ctx.font = '16px sans-serif';
+        let yPos = 110;
         lines.forEach((line, i) => {
-            ctx.fillStyle = line.startsWith('What') || line.startsWith('🎮') ? '#4CAF50' : '#ccc';
-            ctx.fillText(line, W/2, 130 + i * 28);
+            if (line.startsWith('What') || line.startsWith('Mit') || line.startsWith('🎮') || line.startsWith('👾')) {
+                ctx.fillStyle = '#4CAF50';
+            } else if (line === '') {
+                // Skip empty lines but add minimal spacing
+                yPos += 4;
+                return;
+            } else {
+                ctx.fillStyle = '#ccc';
+            }
+            ctx.fillText(line, W/2, yPos);
+            yPos += 22;
         });
         
         ctx.fillStyle = '#888';
-        ctx.fillText('Press ESC or SPACE to return', W/2, H - 30);
-        ctx.textAlign = 'left';
-    }
-    
-    function drawTutorialMode() {
-        drawBackground('moon');
-        
-        const tut = tutorialStep;
-        
-        // Simple guided tutorial
-        ctx.font = 'bold 32px sans-serif';
-        ctx.fillStyle = '#4CAF50';
-        ctx.textAlign = 'center';
-        ctx.fillText(t('tutorial'), W/2, 60);
-        
-        const steps = [
-            { text: t('tut1'), hint: '↑ or SPACE', icon: '🚀' },
-            { text: t('tut2'), hint: '← →', icon: '↔️' },
-            { text: t('tut3'), hint: 'Land gently!', icon: '🎯' }
-        ];
-        
-        ctx.font = '24px sans-serif';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(steps[tut].icon + ' ' + steps[tut].text, W/2, 200);
-        
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillStyle = '#ffeb3b';
-        ctx.fillText(steps[tut].hint, W/2, 280);
-        
-        // Progress dots
-        for (let i = 0; i < 3; i++) {
-            ctx.fillStyle = i === tut ? '#4CAF50' : '#444';
-            ctx.beginPath();
-            ctx.arc(W/2 - 30 + i * 30, 350, 8, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        ctx.fillStyle = '#888';
-        ctx.font = '18px sans-serif';
-        ctx.fillText('Press SPACE to continue', W/2, 420);
+        ctx.font = '14px sans-serif';
+        ctx.fillText(lang === 'hu' ? 'Nyomj ESC vagy SPACE-t a visszatéréshez' : 'Press ESC or SPACE to return', W/2, H - 25);
         ctx.textAlign = 'left';
     }
     
@@ -3080,8 +3020,8 @@
         
         // State machine
         if (state === 'menu') {
-            if (justPressed['ArrowDown'] || justPressed['KeyS']) { menuSel = (menuSel + 1) % 5; audio.playClick(); }
-            if (justPressed['ArrowUp'] || justPressed['KeyW']) { menuSel = (menuSel + 4) % 5; audio.playClick(); }
+            if (justPressed['ArrowDown'] || justPressed['KeyS']) { menuSel = (menuSel + 1) % 4; audio.playClick(); }
+            if (justPressed['ArrowUp'] || justPressed['KeyW']) { menuSel = (menuSel + 3) % 4; audio.playClick(); }
             if (justPressed['Space'] || justPressed['Enter']) {
                 audio.playClick();
                 if (menuSel === 0) {
@@ -3089,8 +3029,7 @@
                     startTransition('playing', () => startLevel(0));
                 }
                 else if (menuSel === 1) { state = 'levelSelect'; levelSel = 0; }
-                else if (menuSel === 2) { state = 'tutorialMode'; tutorialStep = 0; }
-                else if (menuSel === 3) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
+                else if (menuSel === 2) { state = 'explore'; exploreCardSelected = -1; menuSel = 0; }
                 else state = 'info';
             }
             drawMenu();
@@ -3152,18 +3091,6 @@
         else if (state === 'info') {
             drawInfo();
             if (justPressed['Space'] || justPressed['Escape']) { state = 'menu'; audio.playClick(); }
-        }
-        else if (state === 'tutorialMode') {
-            drawTutorialMode();
-            if (justPressed['Space'] || justPressed['Enter']) {
-                audio.playClick();
-                tutorialStep++;
-                if (tutorialStep >= 3) {
-                    state = 'menu';
-                    showTutorial = false;
-                }
-            }
-            if (justPressed['Escape']) { state = 'menu'; audio.playClick(); }
         }
         else if (state === 'playing') {
             // ATALHO DE TESTE: Pressione 'F' para testar a tela final
@@ -3383,13 +3310,6 @@
             }
             } // End of landing check (skip for boss level)
             
-            // Tutorial auto-advance
-            if (showTutorial && tutorialStep <= 2) {
-                if (tutorialStep === 0 && lander.thrust) tutorialStep = 1;
-                else if (tutorialStep === 1 && (leftMove || rightMove)) tutorialStep = 2;
-                else if (tutorialStep === 2 && lander.y > H/2) tutorialStep = 3;
-            }
-            
             updateMascot();
             
             if (justPressed['Escape']) {
@@ -3416,7 +3336,6 @@
             particles.draw(ctx);
             drawLander();
             drawHUD();
-            drawTutorial();
             drawMascot();
             drawFlash();
             
