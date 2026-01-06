@@ -696,9 +696,9 @@
         { planet: 'mars', gravity: 0.10, fuel: 160, safeSpeed: 100, obstacles: 5, wind: 0.002, name: 'Mars 2' }, // 5 obstáculos (mais aliens)
         { planet: 'mars', gravity: 0.12, fuel: 140, safeSpeed: 90, obstacles: 6, wind: 0.003, name: 'Mars 3' }, // 6 obstáculos (muitos aliens)
         // Earth levels (7-9) - MÉDIO/DIFÍCIL
-        { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 130, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
-        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 110, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
-        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 100, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
+        { planet: 'earth', gravity: 0.16, fuel: 220, safeSpeed: 160, obstacles: 2, wind: 0.002, name: 'Earth 1' }, // Fácil
+        { planet: 'earth', gravity: 0.22, fuel: 180, safeSpeed: 145, obstacles: 6, wind: 0.004, name: 'Earth 2' }, // Pouso mais fácil, mais obstáculos
+        { planet: 'earth', gravity: 0.26, fuel: 160, safeSpeed: 135, obstacles: 7, wind: 0.005, name: 'Earth 3' }, // Pouso mais fácil, mais obstáculos
         // Boss level (10) - Chefe Final
         { planet: 'earth', gravity: 0.10, fuel: 300, safeSpeed: 100, obstacles: 0, wind: 0, name: 'Final Boss', boss: true },
     ];
@@ -793,6 +793,158 @@
         audio.init();
     });
     document.addEventListener('keyup', e => { keys[e.code] = false; });
+    
+    // Gamepad support
+    let gamepadConnected = false;
+    let gamepadIndex = null;
+    
+    function checkForGamepads() {
+        const gamepads = navigator.getGamepads();
+        for (let i = 0; i < gamepads.length; i++) {
+            if (gamepads[i] && gamepads[i].connected) {
+                console.log('Gamepad found:', gamepads[i].id, 'index:', i);
+                gamepadConnected = true;
+                gamepadIndex = i;
+                audio.init();
+                return;
+            }
+        }
+    }
+    
+    window.addEventListener('gamepadconnected', (e) => {
+        console.log('Gamepad connected:', e.gamepad.id, 'index:', e.gamepad.index);
+        gamepadConnected = true;
+        gamepadIndex = e.gamepad.index;
+        audio.init();
+    });
+    
+    window.addEventListener('gamepaddisconnected', (e) => {
+        console.log('Gamepad disconnected:', e.gamepad.id);
+        gamepadConnected = false;
+        gamepadIndex = null;
+    });
+    
+    // Verifica gamepads já conectados ao carregar a página (importante para Mac)
+    // Também verifica periodicamente para detectar conectados após interação do usuário
+    setTimeout(() => {
+        checkForGamepads();
+    }, 1000);
+    
+    // Adiciona listener de click para ativar gamepad (alguns navegadores requerem interação)
+    document.addEventListener('click', () => {
+        if (!gamepadConnected) {
+            checkForGamepads();
+        }
+    }, { once: false });
+    
+    let gamepadButtonStates = {};
+    
+    function updateGamepadInput() {
+        // Seguro: se não houver gamepad, simplesmente retorna sem fazer nada
+        if (!gamepadConnected || gamepadIndex === null) return;
+        
+        const gamepads = navigator.getGamepads();
+        if (!gamepads || !gamepads[gamepadIndex]) {
+            // Gamepad desconectado durante o jogo - limpa o estado
+            gamepadConnected = false;
+            gamepadIndex = null;
+            return;
+        }
+        
+        const gamepad = gamepads[gamepadIndex];
+        
+        // Durante o jogo (playing state)
+        if (state === 'playing') {
+            // Analógico esquerdo horizontal (axes[0]) para movimento esquerda/direita
+            const leftStickX = gamepad.axes[0];
+            const deadzone = 0.3; // Zona morta para evitar drift
+            
+            // Só atualiza se o analógico estiver sendo usado (não interfere com teclado se não estiver usando)
+            if (Math.abs(leftStickX) > deadzone) {
+                if (leftStickX < -deadzone) {
+                    keys['ArrowLeft'] = true;
+                    keys['ArrowRight'] = false;
+                } else if (leftStickX > deadzone) {
+                    keys['ArrowRight'] = true;
+                    keys['ArrowLeft'] = false;
+                }
+            }
+            // Se o analógico estiver na zona morta, não sobrescreve (permite que teclado funcione normalmente)
+            
+            // Botão X (botão 0 no PS3) = Thrust (Space) - adiciona ao teclado, não sobrescreve
+            if (gamepad.buttons[0]?.pressed) {
+                keys['Space'] = true;
+            }
+            
+            // Botão Quadrado (botão 2 no PS3) = Shoot (X) - adiciona ao teclado, não sobrescreve
+            if (gamepad.buttons[2]?.pressed) {
+                keys['KeyX'] = true;
+            }
+        } else {
+            // No menu: D-Pad para navegação
+            // D-Pad Up (button 12)
+            if (gamepad.buttons[12]?.pressed && !gamepadButtonStates[12]) {
+                keys['ArrowUp'] = true;
+                justPressed['ArrowUp'] = true;
+                gamepadButtonStates[12] = true;
+            } else if (!gamepad.buttons[12]?.pressed && gamepadButtonStates[12]) {
+                keys['ArrowUp'] = false;
+                gamepadButtonStates[12] = false;
+            }
+            
+            // D-Pad Down (button 13)
+            if (gamepad.buttons[13]?.pressed && !gamepadButtonStates[13]) {
+                keys['ArrowDown'] = true;
+                justPressed['ArrowDown'] = true;
+                gamepadButtonStates[13] = true;
+            } else if (!gamepad.buttons[13]?.pressed && gamepadButtonStates[13]) {
+                keys['ArrowDown'] = false;
+                gamepadButtonStates[13] = false;
+            }
+            
+            // D-Pad Left (button 14)
+            if (gamepad.buttons[14]?.pressed && !gamepadButtonStates[14]) {
+                keys['ArrowLeft'] = true;
+                justPressed['ArrowLeft'] = true;
+                gamepadButtonStates[14] = true;
+            } else if (!gamepad.buttons[14]?.pressed && gamepadButtonStates[14]) {
+                keys['ArrowLeft'] = false;
+                gamepadButtonStates[14] = false;
+            }
+            
+            // D-Pad Right (button 15)
+            if (gamepad.buttons[15]?.pressed && !gamepadButtonStates[15]) {
+                keys['ArrowRight'] = true;
+                justPressed['ArrowRight'] = true;
+                gamepadButtonStates[15] = true;
+            } else if (!gamepad.buttons[15]?.pressed && gamepadButtonStates[15]) {
+                keys['ArrowRight'] = false;
+                gamepadButtonStates[15] = false;
+            }
+        }
+        
+        // Botão X (button 0) = Enter/Space para seleção (apenas quando não está jogando)
+        if (state !== 'playing') {
+            if (gamepad.buttons[0]?.pressed && !gamepadButtonStates[0]) {
+                keys['Enter'] = true;
+                justPressed['Enter'] = true;
+                gamepadButtonStates[0] = true;
+            } else if (!gamepad.buttons[0]?.pressed && gamepadButtonStates[0]) {
+                keys['Enter'] = false;
+                gamepadButtonStates[0] = false;
+            }
+        }
+        
+        // Botão Círculo (button 1) = Escape/Back
+        if (gamepad.buttons[1]?.pressed && !gamepadButtonStates[1]) {
+            keys['Escape'] = true;
+            justPressed['Escape'] = true;
+            gamepadButtonStates[1] = true;
+        } else if (!gamepad.buttons[1]?.pressed && gamepadButtonStates[1]) {
+            keys['Escape'] = false;
+            gamepadButtonStates[1] = false;
+        }
+    }
     
     // Touch controls
     function setupTouchControls() {
@@ -3084,6 +3236,9 @@
     // MAIN UPDATE LOOP
     // ============================================
     function update() {
+        // Gamepad input update
+        updateGamepadInput();
+        
         // Input processing
         for (let k in keys) {
             justPressed[k] = keys[k] && !prevKeys[k];
@@ -3477,6 +3632,9 @@
         detectMobile();
         setupTouchControls();
         setupMenuControls();
+        
+        // Verifica gamepads já conectados ao iniciar
+        checkForGamepads();
         
         // Handle resize
         window.addEventListener('resize', () => {

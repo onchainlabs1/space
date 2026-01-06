@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Adjusted difficulty curve for better progression
 - Moon levels made easier for beginners
 - Mars 3 rebalanced for fairness
+- Earth levels (1-3) landing speed limits increased (130→160, 110→145, 100→135) to make landing easier for children
 
 ### Fixed
 - Boss level scoring now saves correctly
