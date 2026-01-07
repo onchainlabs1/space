@@ -742,28 +742,28 @@
         },
         hu: {
             title: 'ŰRMISSZIÓ', subtitle: 'Szállj le biztonságosan!',
-            play: 'Játék', levels: 'Pályák', tutorial: 'Bemutató', explore: 'Felfedezés', info: 'Infó', back: 'Vissza',
+            play: 'Játék indítása', levels: 'Pályák', tutorial: 'Útmutató', explore: 'Felfedezés', info: 'Tudnivalók', back: 'Vissza',
             moon: 'Hold', mars: 'Mars', earth: 'Föld',
-            altitude: 'Mag', speed: 'Seb', fuel: 'Üzemanyag',
-            success: 'Sikeres Landolás!', boss_victory: '🏆 FŐELLENSÉG LEGYŐZVE! 🏆', score: 'Pont', total: 'Össz', again: 'SPACE = Tovább',
-            failure: 'Próbáld Újra!', tooFast: 'Túl gyorsan!', noFuel: 'Nincs üzemanyag!', missed: 'Rossz hely!', hit: 'Ütközés!',
-            controls: '↑=tolás ←→=mozgás',
+            altitude: 'Magasság', speed: 'Sebesség', fuel: 'Üzemanyag',
+            success: 'Sikeres leszállás', boss_victory: 'Legyőzted a főellenséget', score: 'Pont', total: 'Összesen', again: 'SPACE = Újra',
+            failure: 'Próbáld újra', tooFast: 'Túl gyors voltál', noFuel: 'Nincs üzemanyag!', missed: 'Rossz hely!', hit: 'Ütközés!',
+            controls: '↑=gyorsítás ←→=mozgás',
             level: 'Pálya', locked: 'Zárolva', highscore: 'Rekord',
-            tut1: 'Nyomd a FEL-et vagy SPACE-t a toláshoz!',
-            tut2: 'BAL/JOBB gombokkal oldalra mozoghatsz',
-            tut3: 'Lassan szállj le a zöld platformra!',
-            mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a padot!',
-            mascot_good: 'Szuper!', mascot_try: 'Menni fog!',
+            tut1: 'Nyomd a FEL vagy SPACE billentyűt a gyorsításhoz',
+            tut2: 'BAL/JOBB gombbal mozoghatsz oldalra',
+            tut3: 'Szállj le lassan a zöld platformra!',
+            mascot_fast: 'Lassíts!', mascot_fuel: 'Spórolj!', mascot_aim: 'Célozd a leszállópadot!',
+            mascot_good: 'Szuper!', mascot_try: 'Menni fog, ügyes vagy!',
             mascot_boss_shoot: 'Nyomj X-et a lövéshez!', mascot_boss_weak: 'Célozd a zöld pontokat!', mascot_boss_defeat: 'Majdnem kész!',
             nextLevel: 'Következő', menu: 'Menü',
             explore_gravity_title: 'Mi a gravitáció?',
-            explore_gravity_text: 'A gravitáció mindent lefelé húz. A Földön nem lebegsz, mert a gravitáció húz. Ebben a játékban a hajó mindig leesik a gravitáció miatt.',
+            explore_gravity_text: 'A gravitáció mindent lefelé húz. A Földön ezért nem lebegsz. Ebben a játékban az űrhajó mindig lefelé esik a gravitáció miatt.',
             explore_moon_title: 'Hold',
-            explore_moon_text: 'A Holdnak gyenge a gravitációja. Emiatt a hajó lassan esik. Ezért könnyebb leszállni a játékban.',
+            explore_moon_text: 'A Hold gravitációja gyenge. Ezért az űrhajó lassabban esik, és könnyebb vele leszállni.',
             explore_mars_title: 'Mars',
-            explore_mars_text: 'A Marsnak közepes a gravitációja. A hajó gyorsabban esik, mint a Holdon. Több figyelmet kell fordítanod a leszállásra a játékban.',
+            explore_mars_text: 'A Mars gravitációja közepes. Az űrhajó gyorsabban esik, mint a Holdon, ezért jobban kell figyelned a leszállásnál.',
             explore_earth_title: 'Föld',
-            explore_earth_text: 'A Földnek erős a gravitációja. A hajó gyorsan esik. Ez a legnehezebb pálya a játékban!'
+            explore_earth_text: 'A Földnek erős a gravitációja. Az űrhajó gyorsan esik. Ez a legnehezebb pálya a játékban.'
         }
     };
     const t = (key) => TEXTS[lang][key] || key;
@@ -2834,7 +2834,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = '#ffd700';
             ctx.shadowBlur = 10;
-            ctx.fillText(lang === 'hu' ? '⭐ Gratulálunk! Te vagy az igazi űrhajós! ⭐' : '⭐ Congratulations! You are a true astronaut! ⭐', W/2, 430);
+            ctx.fillText(lang === 'hu' ? '⭐ Gratulálok! Te egy igazi űrhajós vagy. ⭐' : '⭐ Congratulations! You are a true astronaut! ⭐', W/2, 430);
             ctx.shadowBlur = 0;
             
             // Botão Menu
@@ -3124,7 +3124,7 @@
         ctx.fillText(t('tutorial'), W/2, 60);
         
         const lines = lang === 'hu' ? [
-            '🎓 Oktatási Űrhajó Landoló Játék',
+            '🎓 Oktató űrhajós leszálló játék',
             '',
             'Mit tanít:',
             '  • A gravitáció folyamatosan lefelé húz',
@@ -3132,11 +3132,11 @@
             '  • Tervezz előre és célozz pontosan!',
             '',
             '🎮 Irányítás:',
-            '  ↑/SPACE = Felfelé tolás',
+            '  ↑/SPACE = Sebesség',
             '  ←/→ = Oldalra mozgás',
             '  M = Hang ki/bekapcsolás',
             '',
-            'Lassan szállj le a zöld platformra!',
+            'Lassan szállj le a zöld leszállópadra',
             '',
             '👾 Főellenség (Boss):',
             '  X = Lövés a főellenségre',
